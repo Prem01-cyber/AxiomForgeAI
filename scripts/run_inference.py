@@ -141,15 +141,27 @@ def load_base_model(
 
 def load_rl_model(
     checkpoint: str,
+    base_model: AutoModelForCausalLM,
     base_tokenizer: AutoTokenizer,
     device: torch.device,
     attn_impl: str,
-) -> AutoModelForCausalLM:
+) -> Tuple[AutoModelForCausalLM, AutoTokenizer]:
     """
-    Load the RL fine-tuned model.  Supports:
-      - PEFT / LoRA adapter directory (has adapter_config.json)
-      - Full model checkpoint (has config.json)
+    Load the RL fine-tuned checkpoint for comparison against the raw base model.
+
+    Two checkpoint formats are supported:
+
+    PEFT / LoRA adapter (has adapter_config.json)
+        The already-loaded base model weights are deep-copied in CPU memory,
+        the adapter is applied on top, then merged and unloaded.
+        This avoids downloading the 1.5B base weights from HuggingFace a
+        second time — the base model is downloaded only once per run.
+
+    Full saved model (has config.json, no adapter_config.json)
+        Loaded directly from disk with from_pretrained.
     """
+    import copy
+
     ckpt_path = Path(checkpoint)
     if not ckpt_path.exists():
         raise FileNotFoundError(f"Checkpoint not found: {checkpoint}")
@@ -157,19 +169,21 @@ def load_rl_model(
     is_peft = (ckpt_path / "adapter_config.json").exists()
 
     if is_peft:
-        logger.info("Loading PEFT adapter from %s (base: %s)", checkpoint, BASE_MODEL_ID)
-        from peft import PeftModel
-        base = AutoModelForCausalLM.from_pretrained(
-            BASE_MODEL_ID,
-            torch_dtype=torch.bfloat16,
-            device_map={"": device},
-            trust_remote_code=True,
-            attn_implementation=attn_impl,
+        logger.info(
+            "Loading PEFT adapter from %s  (reusing base weights — no second HF download)",
+            checkpoint,
         )
-        model = PeftModel.from_pretrained(base, checkpoint)
+        from peft import PeftModel
+
+        # Deep-copy the already-loaded base model so the base remains untouched
+        # for side-by-side comparison.  For a 1.5B bfloat16 model this takes
+        # ~1-2 s and avoids re-downloading ~3 GB from HuggingFace.
+        base_copy = copy.deepcopy(base_model)
+        model = PeftModel.from_pretrained(base_copy, checkpoint)
         model = model.merge_and_unload()
+        model = model.to(device)
     else:
-        logger.info("Loading full model from %s", checkpoint)
+        logger.info("Loading full model checkpoint from %s", checkpoint)
         model = AutoModelForCausalLM.from_pretrained(
             checkpoint,
             torch_dtype=torch.bfloat16,
@@ -392,7 +406,7 @@ def main() -> None:
     rl_model, rl_tokenizer = None, None
     if not args.base_only and args.checkpoint:
         rl_model, rl_tokenizer = load_rl_model(
-            args.checkpoint, base_tokenizer, device, attn_impl
+            args.checkpoint, base_model, base_tokenizer, device, attn_impl
         )
     elif not args.base_only and not args.checkpoint:
         logger.warning("No --checkpoint provided. Running base model only.")
