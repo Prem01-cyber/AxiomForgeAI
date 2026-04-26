@@ -17,6 +17,10 @@ tags:
 
 *A self-improving math environment where a model practices on verified problems, generates new challenges when ready, and learns from solution attempts whose reasoning steps and final answers agree.*
 
+[Hugging Face Space](https://huggingface.co/spaces/jampuramprem/AxiomForgeAI)
+
+[Hugging Face Blog](https://huggingface.co/spaces/jampuramprem/AxiomForgeAI/blob/main/blog.md)
+
 ## The Problem
 
 Math reasoning models can fail in two different ways. Sometimes the setup, arithmetic, and algebraic steps look reasonable, but the final answer is wrong. Sometimes the final answer is right, but the reasoning that produced it is incomplete, inconsistent, or hard to trust.
@@ -87,6 +91,15 @@ The GRPO training loop is available in two forms:
   ```
 - [`train_grpo.ipynb`](train_grpo.ipynb) — notebook version with the same parameters, structured around `env.reset / env.step / env.state / env.close` for interactive inspection.
 
+
+## Logs
+
+Each training run writes the following logs for verification:
+
+- `logs/metrics.jsonl` — per-iteration metrics: reward, accuracy, step quality, LCCP, training phase, and self-play stats
+- `logs/grpo/<run_id>/console_output.log` — full console output with run config, GPU info, and per-iteration progress
+- `logs/grpo/<run_id>/metrics.csv` — same metrics in CSV format for quick inspection
+- `logs/grpo/<run_id>/config.json` — exact hyperparameters used for the run
 
 ## Results
 

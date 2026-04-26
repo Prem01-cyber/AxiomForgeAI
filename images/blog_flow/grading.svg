@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300" width="900" height="300">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 300" width="920" height="300">
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M2 1L8 5L2 9" fill="none" stroke="#475569" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -8,38 +8,37 @@
       .title { font-size: 19px; font-weight: 700; fill: #0F172A; }
       .label { font-size: 13px; font-weight: 700; fill: #0F172A; }
       .small { font-size: 11px; fill: #475569; }
-      .line { fill: none; stroke: #475569; stroke-width: 1.4; marker-end: url(#arrow); }
+      .line { fill: none; stroke: #475569; stroke-width: 1.5; marker-end: url(#arrow); }
     </style>
   </defs>
 
-  <rect x="250" y="18" width="400" height="42" rx="8" fill="#F8FAFC" stroke="#CBD5E1"/>
-  <text x="450" y="45" text-anchor="middle" class="title">Reward Signals</text>
+  <rect x="260" y="18" width="400" height="40" rx="8" fill="#F8FAFC" stroke="#CBD5E1"/>
+  <text x="460" y="44" text-anchor="middle" class="title">What Gets Checked</text>
 
-  <rect x="52" y="116" width="150" height="68" rx="10" fill="#EAF0F7" stroke="#93B5D8"/>
-  <text x="127" y="144" text-anchor="middle" class="label">Attempt</text>
-  <text x="127" y="164" text-anchor="middle" class="small">reasoning + answer</text>
+  <rect x="30" y="76" width="148" height="162" rx="10" fill="#EAF0F7" stroke="#93B5D8"/>
+  <text x="104" y="152" text-anchor="middle" class="label">Attempt</text>
+  <text x="104" y="172" text-anchor="middle" class="small">steps + answer</text>
 
-  <rect x="270" y="88" width="132" height="42" rx="8" fill="#F8FAFC" stroke="#CBD5E1"/>
-  <text x="336" y="114" text-anchor="middle" class="small">final answer</text>
-  <rect x="426" y="88" width="132" height="42" rx="8" fill="#F8FAFC" stroke="#CBD5E1"/>
-  <text x="492" y="114" text-anchor="middle" class="small">process score</text>
-  <rect x="582" y="88" width="132" height="42" rx="8" fill="#F8FAFC" stroke="#CBD5E1"/>
-  <text x="648" y="114" text-anchor="middle" class="small">chain consistency</text>
+  <rect x="228" y="76" width="400" height="46" rx="10" fill="#ECFDF5" stroke="#86A789"/>
+  <text x="428" y="101" text-anchor="middle" class="label">Correctness</text>
+  <text x="428" y="116" text-anchor="middle" class="small">gold answer, symbolic match (grounded)</text>
 
-  <rect x="270" y="164" width="132" height="42" rx="8" fill="#F8FAFC" stroke="#CBD5E1"/>
-  <text x="336" y="190" text-anchor="middle" class="small">symbolic checks</text>
-  <rect x="426" y="164" width="132" height="42" rx="8" fill="#F8FAFC" stroke="#CBD5E1"/>
-  <text x="492" y="190" text-anchor="middle" class="small">format</text>
-  <rect x="582" y="164" width="132" height="42" rx="8" fill="#EEF2FF" stroke="#A5B4FC"/>
-  <text x="648" y="190" text-anchor="middle" class="small">question quality</text>
+  <rect x="228" y="136" width="400" height="46" rx="10" fill="#F8FAFC" stroke="#CBD5E1"/>
+  <text x="428" y="161" text-anchor="middle" class="label">Reasoning quality</text>
+  <text x="428" y="176" text-anchor="middle" class="small">PRM steps, chain prefix (LCCP), format</text>
 
-  <rect x="760" y="126" width="96" height="48" rx="10" fill="#ECFDF5" stroke="#86A789"/>
-  <text x="808" y="155" text-anchor="middle" class="label">score</text>
+  <rect x="228" y="196" width="400" height="46" rx="10" fill="#EEF2FF" stroke="#A5B4FC"/>
+  <text x="428" y="221" text-anchor="middle" class="label">Question quality</text>
+  <text x="428" y="236" text-anchor="middle" class="small">topic, difficulty, clarity, novelty (self-play)</text>
 
-  <path class="line" d="M202 150 L270 109"/>
-  <path class="line" d="M202 150 L270 185"/>
-  <path class="line" d="M714 109 L760 150"/>
-  <path class="line" d="M714 185 L760 150"/>
-  <path class="line" d="M558 109 L760 150"/>
-  <path class="line" d="M558 185 L760 150"/>
+  <rect x="678" y="76" width="148" height="162" rx="10" fill="#FFF7ED" stroke="#FDBA74"/>
+  <text x="752" y="152" text-anchor="middle" class="label">Attempt</text>
+  <text x="752" y="172" text-anchor="middle" class="label">score</text>
+
+  <path class="line" d="M178 99 L228 99"/>
+  <path class="line" d="M178 159 L228 159"/>
+  <path class="line" d="M178 219 L228 219"/>
+  <path class="line" d="M628 99 L678 99"/>
+  <path class="line" d="M628 159 L678 159"/>
+  <path class="line" d="M628 219 L678 219"/>
 </svg>

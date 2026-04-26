@@ -1,0 +1,571 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 440" width="720" height="440">
+<defs>
+  <!-- Arrow marker -->
+  <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#888780" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#378ADD" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#3B6D11" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <marker id="arr-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#7F77DD" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+
+  <!-- Total duration: 10 scenes × 6s = 60s loop -->
+  <!-- Each scene: visible 0s–6s within its window, crossfade 0.4s in/out -->
+  <!-- Scene offsets (in 60s total): S1=0, S2=6, S3=12, S4=18, S5=24, S6=30, S7=36, S8=42, S9=48, S10=54 -->
+
+  <style>
+    .bg { fill: #ffffff; }
+    /* Scene fade timing — each scene is 6s of 60s */
+    .s1  { animation: sc1  60s linear infinite; }
+    .s2  { animation: sc2  60s linear infinite; }
+    .s3  { animation: sc3  60s linear infinite; }
+    .s4  { animation: sc4  60s linear infinite; }
+    .s5  { animation: sc5  60s linear infinite; }
+    .s6  { animation: sc6  60s linear infinite; }
+    .s7  { animation: sc7  60s linear infinite; }
+    .s8  { animation: sc8  60s linear infinite; }
+    .s9  { animation: sc9  60s linear infinite; }
+    .s10 { animation: sc10 60s linear infinite; }
+
+    /* Scene 1: 0%–10% */
+    @keyframes sc1  { 0%{opacity:0} 1%{opacity:1} 9%{opacity:1} 10%{opacity:0} 10.01%{opacity:0} 100%{opacity:0} }
+    /* Scene 2: 10%–20% */
+    @keyframes sc2  { 0%{opacity:0} 10%{opacity:0} 11%{opacity:1} 19%{opacity:1} 20%{opacity:0} 100%{opacity:0} }
+    /* Scene 3: 20%–30% */
+    @keyframes sc3  { 0%{opacity:0} 20%{opacity:0} 21%{opacity:1} 29%{opacity:1} 30%{opacity:0} 100%{opacity:0} }
+    /* Scene 4: 30%–40% */
+    @keyframes sc4  { 0%{opacity:0} 30%{opacity:0} 31%{opacity:1} 39%{opacity:1} 40%{opacity:0} 100%{opacity:0} }
+    /* Scene 5: 40%–50% */
+    @keyframes sc5  { 0%{opacity:0} 40%{opacity:0} 41%{opacity:1} 49%{opacity:1} 50%{opacity:0} 100%{opacity:0} }
+    /* Scene 6: 50%–60% */
+    @keyframes sc6  { 0%{opacity:0} 50%{opacity:0} 51%{opacity:1} 59%{opacity:1} 60%{opacity:0} 100%{opacity:0} }
+    /* Scene 7: 60%–70% */
+    @keyframes sc7  { 0%{opacity:0} 60%{opacity:0} 61%{opacity:1} 69%{opacity:1} 70%{opacity:0} 100%{opacity:0} }
+    /* Scene 8: 70%–80% */
+    @keyframes sc8  { 0%{opacity:0} 70%{opacity:0} 71%{opacity:1} 79%{opacity:1} 80%{opacity:0} 100%{opacity:0} }
+    /* Scene 9: 80%–90% */
+    @keyframes sc9  { 0%{opacity:0} 80%{opacity:0} 81%{opacity:1} 89%{opacity:1} 90%{opacity:0} 100%{opacity:0} }
+    /* Scene 10: 90%–100% */
+    @keyframes sc10 { 0%{opacity:0} 90%{opacity:0} 91%{opacity:1} 99%{opacity:1} 100%{opacity:0} }
+
+    /* Progress bar */
+    @keyframes progress { 0%{width:0px} 100%{width:720px} }
+    .progbar { animation: progress 60s linear infinite; }
+
+    /* Scene counter pulse */
+    @keyframes ctpulse { 0%,100%{opacity:.5} 50%{opacity:1} }
+
+    text { font-family: -apple-system, 'Segoe UI', Arial, sans-serif; }
+  </style>
+</defs>
+
+<!-- Background -->
+<rect width="720" height="440" fill="#f8f8f6" rx="12"/>
+
+<!-- Progress bar track -->
+<rect x="0" y="433" width="720" height="7" fill="#e8e6e0" rx="0"/>
+<rect x="0" y="433" class="progbar" height="7" fill="#534AB7" rx="0"/>
+
+<!-- Scene counter (always visible) -->
+<rect x="0" y="0" width="720" height="440" fill="none"/>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SCENE 1: Two failure modes -->
+<!-- ═══════════════════════════════════════════════════ -->
+<g class="s1">
+  <!-- Header -->
+  <text x="360" y="42" text-anchor="middle" font-size="20" font-weight="600" fill="#1a1a1a">AxiomForgeAI</text>
+  <text x="360" y="66" text-anchor="middle" font-size="13" fill="#666">Self-improving math reasoning — trains reasoning paths, not just final numbers</text>
+
+  <!-- Divider -->
+  <line x1="60" y1="82" x2="660" y2="82" stroke="#e0ddd8" stroke-width="0.5"/>
+
+  <!-- Left card: Good steps, wrong answer -->
+  <rect x="60" y="100" width="268" height="200" rx="10" fill="#fff" stroke="#e0ddd8" stroke-width="1"/>
+  <rect x="60" y="100" width="268" height="36" rx="10" fill="#fee2e2" stroke="none"/>
+  <rect x="60" y="124" width="268" height="12" rx="0" fill="#fee2e2" stroke="none"/>
+  <text x="194" y="123" text-anchor="middle" font-size="13" font-weight="600" fill="#991b1b">Plausible steps  ✗  wrong answer</text>
+  <text x="100" y="162" font-size="12" fill="#444">Step 1:  3x + 6 = 15</text>
+  <text x="100" y="182" font-size="12" fill="#444">Step 2:  3x = 9</text>
+  <text x="100" y="202" font-size="12" fill="#444">Step 3:  x = 5  ← arithmetic error</text>
+  <rect x="80" y="220" width="228" height="34" rx="6" fill="#fef2f2" stroke="#fca5a5" stroke-width="0.5"/>
+  <text x="194" y="241" text-anchor="middle" font-size="13" font-weight="600" fill="#991b1b">Answer: x = 5  ✗</text>
+  <text x="194" y="284" text-anchor="middle" font-size="11" fill="#888">Steps look fine but answer is wrong</text>
+
+  <!-- VS -->
+  <text x="360" y="208" text-anchor="middle" font-size="15" font-weight="600" fill="#aaa">vs</text>
+
+  <!-- Right card: Right answer, weak reasoning -->
+  <rect x="392" y="100" width="268" height="200" rx="10" fill="#fff" stroke="#e0ddd8" stroke-width="1"/>
+  <rect x="392" y="100" width="268" height="36" rx="10" fill="#fef9c3" stroke="none"/>
+  <rect x="392" y="124" width="268" height="12" rx="0" fill="#fef9c3" stroke="none"/>
+  <text x="526" y="123" text-anchor="middle" font-size="13" font-weight="600" fill="#854d0e">Right answer  ✓  weak reasoning</text>
+  <text x="432" y="162" font-size="12" fill="#444">Step 1:  probably around 3</text>
+  <text x="432" y="182" font-size="12" fill="#444">Step 2:  I think x is 3</text>
+  <text x="432" y="202" font-size="12" fill="#444">Step 3:  seems correct</text>
+  <rect x="412" y="220" width="228" height="34" rx="6" fill="#f0fdf4" stroke="#86efac" stroke-width="0.5"/>
+  <text x="526" y="241" text-anchor="middle" font-size="13" font-weight="600" fill="#166534">Answer: x = 3  ✓</text>
+  <text x="526" y="284" text-anchor="middle" font-size="11" fill="#888">Answer is right but reasoning is weak</text>
+
+  <!-- Bottom label -->
+  <text x="360" y="340" text-anchor="middle" font-size="12" fill="#534AB7" font-weight="500">AxiomForgeAI trains against both failure modes</text>
+
+  <!-- Scene label -->
+  <text x="360" y="420" text-anchor="middle" font-size="10" fill="#aaa">Scene 1 / 10</text>
+</g>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SCENE 2: Training phases + phase controller -->
+<!-- ═══════════════════════════════════════════════════ -->
+<g class="s2">
+  <text x="360" y="40" text-anchor="middle" font-size="16" font-weight="600" fill="#1a1a1a">The training environment</text>
+  <text x="360" y="62" text-anchor="middle" font-size="12" fill="#666">A phase controller decides what the model practices each batch</text>
+
+  <!-- Math model -->
+  <rect x="270" y="88" width="180" height="60" rx="10" fill="#E6F1FB" stroke="#185FA5" stroke-width="1"/>
+  <text x="360" y="114" text-anchor="middle" font-size="14" font-weight="600" fill="#0C447C">Math model</text>
+  <text x="360" y="134" text-anchor="middle" font-size="11" fill="#185FA5">Compact reasoning model</text>
+
+  <!-- Arrow down -->
+  <line x1="360" y1="148" x2="360" y2="178" stroke="#888" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Phase controller -->
+  <rect x="258" y="178" width="204" height="56" rx="10" fill="#EEEDFE" stroke="#534AB7" stroke-width="1"/>
+  <text x="360" y="203" text-anchor="middle" font-size="14" font-weight="600" fill="#3C3489">Phase controller</text>
+  <text x="360" y="221" text-anchor="middle" font-size="11" fill="#534AB7">Controls task mix per batch</text>
+
+  <!-- Three phases -->
+  <rect x="44" y="100" width="168" height="54" rx="8" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.5"/>
+  <text x="128" y="122" text-anchor="middle" font-size="12" font-weight="600" fill="#27500A">Phase 1</text>
+  <text x="128" y="140" text-anchor="middle" font-size="11" fill="#3B6D11">Grounded problems only</text>
+
+  <rect x="44" y="170" width="168" height="54" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+  <text x="128" y="192" text-anchor="middle" font-size="12" font-weight="600" fill="#085041">Phase 2</text>
+  <text x="128" y="210" text-anchor="middle" font-size="11" fill="#0F6E56">Self-play gradually added</text>
+
+  <rect x="44" y="240" width="168" height="54" rx="8" fill="#EEEDFE" stroke="#7F77DD" stroke-width="0.5"/>
+  <text x="128" y="262" text-anchor="middle" font-size="12" font-weight="600" fill="#3C3489">Phase 3</text>
+  <text x="128" y="280" text-anchor="middle" font-size="11" fill="#534AB7">Mixed + fallback recovery</text>
+
+  <!-- connector from phases to controller -->
+  <line x1="212" y1="206" x2="256" y2="206" stroke="#b4b2a9" stroke-width="0.5" stroke-dasharray="3 3"/>
+
+  <!-- Stable accuracy note -->
+  <rect x="510" y="130" width="168" height="110" rx="8" fill="#fff" stroke="#e0ddd8" stroke-width="0.5"/>
+  <text x="594" y="154" text-anchor="middle" font-size="11" font-weight="600" fill="#444">Fallback logic</text>
+  <text x="594" y="173" text-anchor="middle" font-size="10" fill="#666">If answer quality drops,</text>
+  <text x="594" y="189" text-anchor="middle" font-size="10" fill="#666">controller reverts to</text>
+  <text x="594" y="205" text-anchor="middle" font-size="10" fill="#666">grounded-only until</text>
+  <text x="594" y="221" text-anchor="middle" font-size="10" fill="#666">stability is restored</text>
+  <line x1="462" y1="206" x2="508" y2="190" stroke="#b4b2a9" stroke-width="0.5" stroke-dasharray="3 3"/>
+
+  <text x="360" y="330" text-anchor="middle" font-size="12" fill="#534AB7" font-weight="500">Phase 1 is grounded-only. Self-play enters only when the model is ready.</text>
+  <text x="360" y="420" text-anchor="middle" font-size="10" fill="#aaa">Scene 2 / 10</text>
+</g>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SCENE 3: Two task sources -->
+<!-- ═══════════════════════════════════════════════════ -->
+<g class="s3">
+  <text x="360" y="40" text-anchor="middle" font-size="16" font-weight="600" fill="#1a1a1a">Two sources of practice</text>
+  <text x="360" y="62" text-anchor="middle" font-size="12" fill="#666">Grounded keeps training honest. Self-play adds new challenges when ready.</text>
+
+  <!-- Phase controller top -->
+  <rect x="268" y="78" width="184" height="48" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.75"/>
+  <text x="360" y="107" text-anchor="middle" font-size="13" font-weight="600" fill="#3C3489">Phase controller</text>
+
+  <!-- Fork arrows -->
+  <path d="M320 126 L180 162" fill="none" stroke="#3B6D11" stroke-width="1.5" marker-end="url(#arr-green)"/>
+  <path d="M400 126 L540 162" fill="none" stroke="#534AB7" stroke-width="1.5" marker-end="url(#arr-purple)"/>
+
+  <!-- LEFT lane: Grounded -->
+  <rect x="60" y="162" width="240" height="56" rx="8" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.75"/>
+  <text x="180" y="186" text-anchor="middle" font-size="13" font-weight="600" fill="#27500A">Grounded practice</text>
+  <text x="180" y="206" text-anchor="middle" font-size="11" fill="#3B6D11">GSM8K / MATH dataset</text>
+
+  <line x1="180" y1="218" x2="180" y2="246" stroke="#3B6D11" stroke-width="1.2" marker-end="url(#arr-green)"/>
+
+  <rect x="90" y="246" width="180" height="36" rx="6" fill="#C0DD97" stroke="#3B6D11" stroke-width="0.5"/>
+  <text x="180" y="268" text-anchor="middle" font-size="12" font-weight="600" fill="#173404">Hidden gold answer</text>
+
+  <!-- RIGHT lane: Self-play -->
+  <rect x="420" y="162" width="240" height="56" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.75"/>
+  <text x="540" y="186" text-anchor="middle" font-size="13" font-weight="600" fill="#3C3489">Self-play practice</text>
+  <text x="540" y="206" text-anchor="middle" font-size="11" fill="#534AB7">Curriculum → model writes question</text>
+
+  <line x1="540" y1="218" x2="540" y2="246" stroke="#534AB7" stroke-width="1.2" marker-end="url(#arr-purple)"/>
+
+  <rect x="458" y="246" width="164" height="36" rx="6" fill="#AFA9EC" stroke="#534AB7" stroke-width="0.5"/>
+  <text x="540" y="268" text-anchor="middle" font-size="12" font-weight="600" fill="#26215C">Skill + difficulty target</text>
+
+  <!-- Both converge to K attempts -->
+  <path d="M180 282 L310 328" fill="none" stroke="#888" stroke-width="1.5" marker-end="url(#arr)"/>
+  <path d="M540 282 L410 328" fill="none" stroke="#888" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="240" y="328" width="240" height="48" rx="8" fill="#fff" stroke="#e0ddd8" stroke-width="0.75"/>
+  <text x="360" y="356" text-anchor="middle" font-size="13" font-weight="600" fill="#1a1a1a">K solution attempts</text>
+
+  <text x="360" y="420" text-anchor="middle" font-size="10" fill="#aaa">Scene 3 / 10</text>
+</g>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SCENE 4: K attempts -->
+<!-- ═══════════════════════════════════════════════════ -->
+<g class="s4">
+  <text x="360" y="40" text-anchor="middle" font-size="16" font-weight="600" fill="#1a1a1a">K attempts per problem</text>
+  <text x="360" y="62" text-anchor="middle" font-size="12" fill="#666">The model samples several solution paths instead of betting on one answer</text>
+
+  <!-- Problem box -->
+  <rect x="248" y="78" width="224" height="46" rx="8" fill="#fff" stroke="#e0ddd8" stroke-width="0.75"/>
+  <text x="360" y="100" text-anchor="middle" font-size="13" font-weight="600" fill="#1a1a1a">Selected problem</text>
+  <text x="360" y="118" text-anchor="middle" font-size="11" fill="#666">Grounded or self-play source</text>
+
+  <!-- Fan arrows -->
+  <path d="M316 124 L104 184" fill="none" stroke="#378ADD" stroke-width="1.2" marker-end="url(#arr-blue)"/>
+  <path d="M338 124 L248 184" fill="none" stroke="#378ADD" stroke-width="1.2" marker-end="url(#arr-blue)"/>
+  <path d="M382 124 L472 184" fill="none" stroke="#378ADD" stroke-width="1.2" marker-end="url(#arr-blue)"/>
+  <path d="M404 124 L616 184" fill="none" stroke="#378ADD" stroke-width="1.2" marker-end="url(#arr-blue)"/>
+
+  <!-- 4 attempt cards -->
+  <rect x="24" y="184" width="160" height="138" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.75"/>
+  <text x="104" y="208" text-anchor="middle" font-size="12" font-weight="600" fill="#0C447C">Attempt 1</text>
+  <text x="104" y="228" text-anchor="middle" font-size="11" fill="#185FA5">Step 1: 3x+6=15</text>
+  <text x="104" y="246" text-anchor="middle" font-size="11" fill="#185FA5">Step 2: 3x=9</text>
+  <text x="104" y="264" text-anchor="middle" font-size="11" fill="#185FA5">Step 3: x=3</text>
+  <rect x="40" y="276" width="128" height="26" rx="4" fill="#dbeafe" stroke="#93c5fd" stroke-width="0.5"/>
+  <text x="104" y="293" text-anchor="middle" font-size="12" font-weight="600" fill="#1e40af">→ x = 3</text>
+
+  <rect x="200" y="184" width="160" height="138" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.75"/>
+  <text x="280" y="208" text-anchor="middle" font-size="12" font-weight="600" fill="#0C447C">Attempt 2</text>
+  <text x="280" y="228" text-anchor="middle" font-size="11" fill="#185FA5">Step 1: subtract 6</text>
+  <text x="280" y="246" text-anchor="middle" font-size="11" fill="#185FA5">Step 2: divide by 3</text>
+  <text x="280" y="264" text-anchor="middle" font-size="11" fill="#185FA5">Step 3: x=5</text>
+  <rect x="216" y="276" width="128" height="26" rx="4" fill="#fee2e2" stroke="#fca5a5" stroke-width="0.5"/>
+  <text x="280" y="293" text-anchor="middle" font-size="12" font-weight="600" fill="#991b1b">→ x = 5</text>
+
+  <rect x="376" y="184" width="160" height="138" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.75"/>
+  <text x="456" y="208" text-anchor="middle" font-size="12" font-weight="600" fill="#0C447C">Attempt 3</text>
+  <text x="456" y="228" text-anchor="middle" font-size="11" fill="#185FA5">Step 1: 3x = 15−6</text>
+  <text x="456" y="246" text-anchor="middle" font-size="11" fill="#185FA5">Step 2: 3x = 9</text>
+  <text x="456" y="264" text-anchor="middle" font-size="11" fill="#185FA5">Step 3: x = 3</text>
+  <rect x="392" y="276" width="128" height="26" rx="4" fill="#dbeafe" stroke="#93c5fd" stroke-width="0.5"/>
+  <text x="456" y="293" text-anchor="middle" font-size="12" font-weight="600" fill="#1e40af">→ x = 3</text>
+
+  <rect x="552" y="184" width="144" height="138" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.75"/>
+  <text x="624" y="208" text-anchor="middle" font-size="12" font-weight="600" fill="#0C447C">Attempt 4</text>
+  <text x="624" y="228" text-anchor="middle" font-size="11" fill="#185FA5">probably 3</text>
+  <text x="624" y="246" text-anchor="middle" font-size="11" fill="#185FA5">seems right</text>
+  <text x="624" y="264" text-anchor="middle" font-size="11" fill="#185FA5">I think 3</text>
+  <rect x="568" y="276" width="112" height="26" rx="4" fill="#fef9c3" stroke="#fde047" stroke-width="0.5"/>
+  <text x="624" y="293" text-anchor="middle" font-size="12" font-weight="600" fill="#854d0e">→ x = 3 ?</text>
+
+  <text x="360" y="364" text-anchor="middle" font-size="12" fill="#666">Same problem, four different paths — some solid, some shaky</text>
+  <text x="360" y="420" text-anchor="middle" font-size="10" fill="#aaa">Scene 4 / 10</text>
+</g>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SCENE 5: Shared grading -->
+<!-- ═══════════════════════════════════════════════════ -->
+<g class="s5">
+  <text x="360" y="40" text-anchor="middle" font-size="16" font-weight="600" fill="#1a1a1a">Shared grading — 6 signals</text>
+  <text x="360" y="62" text-anchor="middle" font-size="12" fill="#666">Each attempt is checked from multiple angles simultaneously</text>
+
+  <!-- Header box -->
+  <rect x="220" y="76" width="280" height="44" rx="8" fill="#F1EFE8" stroke="#888780" stroke-width="0.75"/>
+  <text x="360" y="103" text-anchor="middle" font-size="13" font-weight="600" fill="#2C2C2A">Shared grading stage</text>
+
+  <!-- 6 criteria in 2 rows of 3 -->
+  <rect x="30"  y="144" width="200" height="58" rx="7" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+  <text x="130" y="167" text-anchor="middle" font-size="12" font-weight="600" fill="#2C2C2A">Final answer check</text>
+  <text x="130" y="185" text-anchor="middle" font-size="10" fill="#5F5E5A">Gold answer match (grounded)</text>
+
+  <rect x="260" y="144" width="200" height="58" rx="7" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+  <text x="360" y="167" text-anchor="middle" font-size="12" font-weight="600" fill="#2C2C2A">Reasoning steps</text>
+  <text x="360" y="185" text-anchor="middle" font-size="10" fill="#5F5E5A">Process reward model quality</text>
+
+  <rect x="490" y="144" width="200" height="58" rx="7" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+  <text x="590" y="167" text-anchor="middle" font-size="12" font-weight="600" fill="#2C2C2A">Chain consistency</text>
+  <text x="590" y="185" text-anchor="middle" font-size="10" fill="#5F5E5A">Steps support final answer</text>
+
+  <rect x="30"  y="224" width="200" height="58" rx="7" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+  <text x="130" y="247" text-anchor="middle" font-size="12" font-weight="600" fill="#2C2C2A">Symbolic arithmetic</text>
+  <text x="130" y="265" text-anchor="middle" font-size="10" fill="#5F5E5A">Verify computations directly</text>
+
+  <rect x="260" y="224" width="200" height="58" rx="7" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+  <text x="360" y="247" text-anchor="middle" font-size="12" font-weight="600" fill="#2C2C2A">Format + parseability</text>
+  <text x="360" y="265" text-anchor="middle" font-size="10" fill="#5F5E5A">Answer is well-formed</text>
+
+  <rect x="490" y="224" width="200" height="58" rx="7" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.75"/>
+  <text x="590" y="247" text-anchor="middle" font-size="12" font-weight="600" fill="#3C3489">Question quality</text>
+  <text x="590" y="265" text-anchor="middle" font-size="10" fill="#534AB7">Self-play: clarity, novelty, fit</text>
+
+  <!-- Arrow to scores -->
+  <line x1="360" y1="282" x2="360" y2="316" stroke="#888" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="236" y="316" width="248" height="44" rx="8" fill="#fff" stroke="#e0ddd8" stroke-width="0.75"/>
+  <text x="360" y="342" text-anchor="middle" font-size="13" font-weight="600" fill="#1a1a1a">Scores per attempt</text>
+
+  <text x="360" y="420" text-anchor="middle" font-size="10" fill="#aaa">Scene 5 / 10</text>
+</g>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SCENE 6: Group comparison -->
+<!-- ═══════════════════════════════════════════════════ -->
+<g class="s6">
+  <text x="360" y="40" text-anchor="middle" font-size="16" font-weight="600" fill="#1a1a1a">Group comparison</text>
+  <text x="360" y="62" text-anchor="middle" font-size="12" fill="#666">GRPO asks which attempt worked best within the group — not in isolation</text>
+
+  <!-- 4 attempt cards with scores -->
+  <!-- Attempt 1 – weak -->
+  <rect x="20" y="88" width="148" height="158" rx="8" fill="#E6F1FB" stroke="#B5D4F4" stroke-width="0.75" opacity="0.6"/>
+  <text x="94" y="112" text-anchor="middle" font-size="12" font-weight="600" fill="#0C447C" opacity="0.6">Attempt 1</text>
+  <text x="94" y="132" text-anchor="middle" font-size="11" fill="#185FA5" opacity="0.6">Answer: ✗</text>
+  <text x="94" y="150" text-anchor="middle" font-size="11" fill="#185FA5" opacity="0.6">Steps: partial</text>
+  <text x="94" y="170" text-anchor="middle" font-size="11" fill="#185FA5" opacity="0.6">Chain: weak</text>
+  <rect x="36" y="188" width="116" height="28" rx="5" fill="#fee2e2" stroke="#fca5a5" stroke-width="0.5" opacity="0.6"/>
+  <text x="94" y="206" text-anchor="middle" font-size="12" font-weight="600" fill="#991b1b" opacity="0.6">Score: 0.31</text>
+
+  <!-- Attempt 2 – mid -->
+  <rect x="184" y="88" width="148" height="158" rx="8" fill="#E6F1FB" stroke="#B5D4F4" stroke-width="0.75" opacity="0.65"/>
+  <text x="258" y="112" text-anchor="middle" font-size="12" font-weight="600" fill="#0C447C" opacity="0.65">Attempt 2</text>
+  <text x="258" y="132" text-anchor="middle" font-size="11" fill="#185FA5" opacity="0.65">Answer: ✓</text>
+  <text x="258" y="150" text-anchor="middle" font-size="11" fill="#185FA5" opacity="0.65">Steps: weak</text>
+  <text x="258" y="170" text-anchor="middle" font-size="11" fill="#185FA5" opacity="0.65">Chain: poor</text>
+  <rect x="200" y="188" width="116" height="28" rx="5" fill="#fef9c3" stroke="#fde047" stroke-width="0.5" opacity="0.65"/>
+  <text x="258" y="206" text-anchor="middle" font-size="12" font-weight="600" fill="#854d0e" opacity="0.65">Score: 0.58</text>
+
+  <!-- Attempt 3 – BEST (highlighted, full opacity) -->
+  <rect x="366" y="72" width="172" height="182" rx="10" fill="#EAF3DE" stroke="#639922" stroke-width="1.5"/>
+  <rect x="366" y="72" width="172" height="28" rx="10" fill="#86efac" stroke="none"/>
+  <rect x="366" y="88" width="172" height="12" rx="0" fill="#86efac" stroke="none"/>
+  <text x="452" y="91" text-anchor="middle" font-size="11" font-weight="600" fill="#166534">★ Best in group</text>
+  <text x="452" y="118" text-anchor="middle" font-size="13" font-weight="600" fill="#27500A">Attempt 3</text>
+  <text x="452" y="140" text-anchor="middle" font-size="12" fill="#3B6D11">Answer: ✓</text>
+  <text x="452" y="159" text-anchor="middle" font-size="12" fill="#3B6D11">Steps: consistent</text>
+  <text x="452" y="178" text-anchor="middle" font-size="12" fill="#3B6D11">Chain: solid</text>
+  <rect x="384" y="196" width="136" height="30" rx="5" fill="#C0DD97" stroke="#3B6D11" stroke-width="0.75"/>
+  <text x="452" y="215" text-anchor="middle" font-size="13" font-weight="600" fill="#173404">Score: 0.91</text>
+
+  <!-- Attempt 4 – weak -->
+  <rect x="554" y="88" width="148" height="158" rx="8" fill="#E6F1FB" stroke="#B5D4F4" stroke-width="0.75" opacity="0.55"/>
+  <text x="628" y="112" text-anchor="middle" font-size="12" font-weight="600" fill="#0C447C" opacity="0.55">Attempt 4</text>
+  <text x="628" y="132" text-anchor="middle" font-size="11" fill="#185FA5" opacity="0.55">Answer: ✗</text>
+  <text x="628" y="150" text-anchor="middle" font-size="11" fill="#185FA5" opacity="0.55">Steps: wrong</text>
+  <text x="628" y="170" text-anchor="middle" font-size="11" fill="#185FA5" opacity="0.55">Chain: none</text>
+  <rect x="570" y="188" width="116" height="28" rx="5" fill="#fee2e2" stroke="#fca5a5" stroke-width="0.5" opacity="0.55"/>
+  <text x="628" y="206" text-anchor="middle" font-size="12" font-weight="600" fill="#991b1b" opacity="0.55">Score: 0.24</text>
+
+  <!-- GRPO box -->
+  <rect x="168" y="292" width="384" height="52" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.75"/>
+  <text x="360" y="316" text-anchor="middle" font-size="14" font-weight="600" fill="#3C3489">Group comparison (GRPO)</text>
+  <text x="360" y="334" text-anchor="middle" font-size="11" fill="#534AB7">Scores are normalized within the problem group</text>
+
+  <text x="360" y="380" text-anchor="middle" font-size="12" fill="#666">The winner is relative — weaker attempts are discounted, not ignored</text>
+  <text x="360" y="420" text-anchor="middle" font-size="10" fill="#aaa">Scene 6 / 10</text>
+</g>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SCENE 7: GRPO update -->
+<!-- ═══════════════════════════════════════════════════ -->
+<g class="s7">
+  <text x="360" y="40" text-anchor="middle" font-size="16" font-weight="600" fill="#1a1a1a">GRPO update</text>
+  <text x="360" y="62" text-anchor="middle" font-size="12" fill="#666">Stronger reasoning paths become the learning signal</text>
+
+  <!-- Best attempt -->
+  <rect x="44" y="86" width="210" height="168" rx="10" fill="#EAF3DE" stroke="#639922" stroke-width="1.5"/>
+  <text x="149" y="112" text-anchor="middle" font-size="13" font-weight="600" fill="#27500A">Strongest attempt</text>
+  <text x="149" y="136" text-anchor="middle" font-size="12" fill="#3B6D11">Correct answer  ✓</text>
+  <text x="149" y="156" text-anchor="middle" font-size="12" fill="#3B6D11">Consistent steps  ✓</text>
+  <text x="149" y="176" text-anchor="middle" font-size="12" fill="#3B6D11">Verified arithmetic  ✓</text>
+  <text x="149" y="196" text-anchor="middle" font-size="12" fill="#3B6D11">Well-formatted  ✓</text>
+  <rect x="64" y="210" width="170" height="28" rx="5" fill="#C0DD97" stroke="#3B6D11" stroke-width="0.5"/>
+  <text x="149" y="228" text-anchor="middle" font-size="13" font-weight="600" fill="#173404">Group score: 0.91</text>
+
+  <!-- Arrow to GRPO -->
+  <line x1="254" y1="170" x2="310" y2="170" stroke="#7F77DD" stroke-width="2" marker-end="url(#arr-purple)"/>
+
+  <!-- GRPO box -->
+  <rect x="310" y="138" width="160" height="64" rx="8" fill="#EEEDFE" stroke="#7F77DD" stroke-width="0.75"/>
+  <text x="390" y="166" text-anchor="middle" font-size="14" font-weight="600" fill="#3C3489">GRPO update</text>
+  <text x="390" y="185" text-anchor="middle" font-size="11" fill="#534AB7">Gradient step on model</text>
+
+  <!-- Arrow to improved model -->
+  <line x1="470" y1="170" x2="530" y2="170" stroke="#7F77DD" stroke-width="2" marker-end="url(#arr-purple)"/>
+
+  <!-- Improved model -->
+  <rect x="530" y="110" width="146" height="120" rx="10" fill="#E6F1FB" stroke="#185FA5" stroke-width="1.5"/>
+  <text x="603" y="148" text-anchor="middle" font-size="14" font-weight="600" fill="#0C447C">Improved</text>
+  <text x="603" y="168" text-anchor="middle" font-size="14" font-weight="600" fill="#0C447C">model</text>
+  <text x="603" y="192" text-anchor="middle" font-size="11" fill="#185FA5">Ready for next</text>
+  <text x="603" y="208" text-anchor="middle" font-size="11" fill="#185FA5">batch</text>
+
+  <!-- Loop-back arrow (curved dashed) -->
+  <path d="M603 230 Q603 300 390 320 Q180 340 149 280 L149 256" fill="none" stroke="#378ADD" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arr-blue)"/>
+  <text x="390" y="342" text-anchor="middle" font-size="11" fill="#185FA5">back to phase controller → next batch</text>
+
+  <text x="360" y="390" text-anchor="middle" font-size="12" fill="#666">Weaker attempts contribute negatively — the gradient learns contrast</text>
+  <text x="360" y="420" text-anchor="middle" font-size="10" fill="#aaa">Scene 7 / 10</text>
+</g>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SCENE 8: Full loop -->
+<!-- ═══════════════════════════════════════════════════ -->
+<g class="s8">
+  <text x="360" y="40" text-anchor="middle" font-size="16" font-weight="600" fill="#1a1a1a">Self-improvement loop</text>
+  <text x="360" y="62" text-anchor="middle" font-size="12" fill="#666">Practice → verify → compare → reinforce → adjust → repeat</text>
+
+  <!-- 5 nodes arranged in a cycle: top, right, bottom-right, bottom-left, left -->
+  <!-- Node 1: Select task (top center) -->
+  <rect x="272" y="80" width="176" height="52" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.75"/>
+  <text x="360" y="111" text-anchor="middle" font-size="13" font-weight="600" fill="#3C3489">Select task</text>
+
+  <!-- Node 2: Sample K (right) -->
+  <rect x="530" y="154" width="164" height="52" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.75"/>
+  <text x="612" y="184" text-anchor="middle" font-size="13" font-weight="600" fill="#0C447C">Sample K attempts</text>
+
+  <!-- Node 3: Verify (bottom right) -->
+  <rect x="480" y="274" width="196" height="52" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.75"/>
+  <text x="578" y="298" text-anchor="middle" font-size="12" font-weight="600" fill="#2C2C2A">Verify steps</text>
+  <text x="578" y="316" text-anchor="middle" font-size="12" font-weight="600" fill="#2C2C2A">+ answer</text>
+
+  <!-- Node 4: Compare (left) -->
+  <rect x="26" y="154" width="164" height="52" rx="8" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.75"/>
+  <text x="108" y="184" text-anchor="middle" font-size="13" font-weight="600" fill="#27500A">Compare group</text>
+
+  <!-- Node 5: GRPO (bottom left) -->
+  <rect x="44" y="274" width="196" height="52" rx="8" fill="#EEEDFE" stroke="#7F77DD" stroke-width="0.75"/>
+  <text x="142" y="304" text-anchor="middle" font-size="13" font-weight="600" fill="#3C3489">GRPO update</text>
+
+  <!-- Arrows connecting the cycle -->
+  <!-- 1→2: Select task → Sample K -->
+  <path d="M448 106 Q530 106 530 154" fill="none" stroke="#534AB7" stroke-width="1.5" marker-end="url(#arr-purple)"/>
+  <!-- 2→3: Sample K → Verify -->
+  <path d="M612 206 Q612 274 676 274" fill="none" stroke="#185FA5" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+  <!-- 3→4: Verify → Compare -->
+  <path d="M480 300 Q300 300 190 206" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- 4→5: Compare → GRPO -->
+  <path d="M108 206 Q108 260 142 274" fill="none" stroke="#3B6D11" stroke-width="1.5" marker-end="url(#arr-green)"/>
+  <!-- 5→1: GRPO → Select task -->
+  <path d="M44 300 Q26 300 26 106 Q120 106 272 106" fill="none" stroke="#7F77DD" stroke-width="1.5" marker-end="url(#arr-purple)"/>
+
+  <!-- Center label -->
+  <text x="360" y="204" text-anchor="middle" font-size="14" font-weight="600" fill="#444">Self-improvement</text>
+  <text x="360" y="224" text-anchor="middle" font-size="13" font-weight="500" fill="#444">loop</text>
+  <text x="360" y="248" text-anchor="middle" font-size="11" fill="#888">Adjust task mix</text>
+  <text x="360" y="264" text-anchor="middle" font-size="11" fill="#888">after each batch</text>
+
+  <text x="360" y="380" text-anchor="middle" font-size="12" fill="#534AB7" font-weight="500">Each loop makes the model slightly better at both steps and answers</text>
+  <text x="360" y="420" text-anchor="middle" font-size="10" fill="#aaa">Scene 8 / 10</text>
+</g>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SCENE 9: Why it matters -->
+<!-- ═══════════════════════════════════════════════════ -->
+<g class="s9">
+  <text x="360" y="40" text-anchor="middle" font-size="16" font-weight="600" fill="#1a1a1a">Why it matters</text>
+  <text x="360" y="62" text-anchor="middle" font-size="12" fill="#666">The answer should follow from the reasoning — not just appear at the end</text>
+
+  <!-- Final solution card -->
+  <rect x="110" y="82" width="500" height="258" rx="12" fill="#f0fdf4" stroke="#639922" stroke-width="1.5"/>
+  <text x="360" y="110" text-anchor="middle" font-size="14" font-weight="600" fill="#27500A">Solution where steps and answer agree</text>
+
+  <!-- Reasoning path -->
+  <rect x="130" y="124" width="200" height="188" rx="8" fill="#fff" stroke="#86efac" stroke-width="0.75"/>
+  <text x="230" y="150" text-anchor="middle" font-size="12" font-weight="600" fill="#27500A">Reasoning path</text>
+  <text x="230" y="174" text-anchor="middle" font-size="12" fill="#3B6D11">Step 1:  3x + 6 = 15</text>
+  <text x="230" y="194" text-anchor="middle" font-size="12" fill="#3B6D11">Step 2:  3x = 9</text>
+  <text x="230" y="214" text-anchor="middle" font-size="12" fill="#3B6D11">Step 3:  x = 3</text>
+  <line x1="150" y1="228" x2="310" y2="228" stroke="#86efac" stroke-width="0.5"/>
+  <text x="230" y="252" text-anchor="middle" font-size="11" fill="#3B6D11">Arithmetic: verified ✓</text>
+  <text x="230" y="270" text-anchor="middle" font-size="11" fill="#3B6D11">Chain: consistent ✓</text>
+  <text x="230" y="290" text-anchor="middle" font-size="11" fill="#3B6D11">Format: clean ✓</text>
+
+  <!-- Green arrow connecting -->
+  <line x1="330" y1="218" x2="390" y2="218" stroke="#22c55e" stroke-width="2.5" marker-end="url(#arr-green)"/>
+  <text x="360" y="212" text-anchor="middle" font-size="10" fill="#3B6D11">follows</text>
+
+  <!-- Final answer -->
+  <rect x="390" y="124" width="200" height="188" rx="8" fill="#fff" stroke="#86efac" stroke-width="0.75"/>
+  <text x="490" y="150" text-anchor="middle" font-size="12" font-weight="600" fill="#27500A">Final answer</text>
+  <text x="490" y="210" text-anchor="middle" font-size="40" font-weight="700" fill="#3B6D11">x=3</text>
+  <line x1="410" y1="240" x2="570" y2="240" stroke="#86efac" stroke-width="0.5"/>
+  <text x="490" y="264" text-anchor="middle" font-size="11" fill="#3B6D11">Correct ✓</text>
+  <text x="490" y="282" text-anchor="middle" font-size="11" fill="#3B6D11">Follows from steps ✓</text>
+
+  <text x="360" y="375" text-anchor="middle" font-size="12" fill="#534AB7" font-weight="500">Not just the right number — the right path that leads to it</text>
+  <text x="360" y="420" text-anchor="middle" font-size="10" fill="#aaa">Scene 9 / 10</text>
+</g>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SCENE 10: Summary -->
+<!-- ═══════════════════════════════════════════════════ -->
+<g class="s10">
+  <text x="360" y="38" text-anchor="middle" font-size="18" font-weight="600" fill="#1a1a1a">AxiomForgeAI</text>
+  <text x="360" y="60" text-anchor="middle" font-size="12" fill="#666">Summary of the training system</text>
+
+  <!-- 4 summary pillars -->
+  <rect x="20" y="78" width="158" height="226" rx="10" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.75"/>
+  <rect x="20" y="78" width="158" height="38" rx="10" fill="#B5D4F4" stroke="none"/>
+  <rect x="20" y="104" width="158" height="12" rx="0" fill="#B5D4F4" stroke="none"/>
+  <text x="99" y="101" text-anchor="middle" font-size="12" font-weight="600" fill="#042C53">Math model</text>
+  <text x="99" y="136" text-anchor="middle" font-size="11" fill="#185FA5">Compact model</text>
+  <text x="99" y="154" text-anchor="middle" font-size="11" fill="#185FA5">trained to reason</text>
+  <text x="99" y="172" text-anchor="middle" font-size="11" fill="#185FA5">step-by-step and</text>
+  <text x="99" y="190" text-anchor="middle" font-size="11" fill="#185FA5">verify its own</text>
+  <text x="99" y="208" text-anchor="middle" font-size="11" fill="#185FA5">chains. Starts</text>
+  <text x="99" y="226" text-anchor="middle" font-size="11" fill="#185FA5">small, improves</text>
+  <text x="99" y="244" text-anchor="middle" font-size="11" fill="#185FA5">each loop.</text>
+  <text x="99" y="262" text-anchor="middle" font-size="11" fill="#185FA5">Blue = model</text>
+
+  <rect x="196" y="78" width="158" height="226" rx="10" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.75"/>
+  <rect x="196" y="78" width="158" height="38" rx="10" fill="#C0DD97" stroke="none"/>
+  <rect x="196" y="104" width="158" height="12" rx="0" fill="#C0DD97" stroke="none"/>
+  <text x="275" y="101" text-anchor="middle" font-size="12" font-weight="600" fill="#173404">Two sources</text>
+  <text x="275" y="136" text-anchor="middle" font-size="11" fill="#3B6D11">Grounded problems</text>
+  <text x="275" y="154" text-anchor="middle" font-size="11" fill="#3B6D11">(GSM8K / MATH)</text>
+  <text x="275" y="172" text-anchor="middle" font-size="11" fill="#3B6D11">anchor training.</text>
+  <text x="275" y="194" text-anchor="middle" font-size="11" fill="#3B6D11">Self-play adds</text>
+  <text x="275" y="212" text-anchor="middle" font-size="11" fill="#3B6D11">novel challenges</text>
+  <text x="275" y="230" text-anchor="middle" font-size="11" fill="#3B6D11">once stability is</text>
+  <text x="275" y="248" text-anchor="middle" font-size="11" fill="#3B6D11">established.</text>
+  <text x="275" y="266" text-anchor="middle" font-size="11" fill="#3B6D11">Green = grounded</text>
+
+  <rect x="372" y="78" width="158" height="226" rx="10" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.75"/>
+  <rect x="372" y="78" width="158" height="38" rx="10" fill="#D3D1C7" stroke="none"/>
+  <rect x="372" y="104" width="158" height="12" rx="0" fill="#D3D1C7" stroke="none"/>
+  <text x="451" y="101" text-anchor="middle" font-size="12" font-weight="600" fill="#2C2C2A">6-signal grading</text>
+  <text x="451" y="136" text-anchor="middle" font-size="11" fill="#5F5E5A">Answer correctness</text>
+  <text x="451" y="154" text-anchor="middle" font-size="11" fill="#5F5E5A">Reasoning steps</text>
+  <text x="451" y="172" text-anchor="middle" font-size="11" fill="#5F5E5A">Chain consistency</text>
+  <text x="451" y="190" text-anchor="middle" font-size="11" fill="#5F5E5A">Symbolic arithmetic</text>
+  <text x="451" y="208" text-anchor="middle" font-size="11" fill="#5F5E5A">Format quality</text>
+  <text x="451" y="226" text-anchor="middle" font-size="11" fill="#5F5E5A">Question quality</text>
+  <text x="451" y="248" text-anchor="middle" font-size="11" fill="#5F5E5A">(self-play only)</text>
+  <text x="451" y="266" text-anchor="middle" font-size="11" fill="#5F5E5A">Gray = grading</text>
+
+  <rect x="548" y="78" width="152" height="226" rx="10" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.75"/>
+  <rect x="548" y="78" width="152" height="38" rx="10" fill="#AFA9EC" stroke="none"/>
+  <rect x="548" y="104" width="152" height="12" rx="0" fill="#AFA9EC" stroke="none"/>
+  <text x="624" y="101" text-anchor="middle" font-size="12" font-weight="600" fill="#26215C">GRPO</text>
+  <text x="624" y="136" text-anchor="middle" font-size="11" fill="#534AB7">Reinforces best</text>
+  <text x="624" y="154" text-anchor="middle" font-size="11" fill="#534AB7">reasoning within</text>
+  <text x="624" y="172" text-anchor="middle" font-size="11" fill="#534AB7">each problem</text>
+  <text x="624" y="190" text-anchor="middle" font-size="11" fill="#534AB7">group. Scores are</text>
+  <text x="624" y="208" text-anchor="middle" font-size="11" fill="#534AB7">relative — not</text>
+  <text x="624" y="226" text-anchor="middle" font-size="11" fill="#534AB7">absolute. Contrast</text>
+  <text x="624" y="244" text-anchor="middle" font-size="11" fill="#534AB7">drives learning.</text>
+  <text x="624" y="266" text-anchor="middle" font-size="11" fill="#534AB7">Purple = GRPO</text>
+
+  <!-- Bottom summary bar -->
+  <rect x="20" y="324" width="680" height="46" rx="8" fill="#EAF3DE" stroke="#639922" stroke-width="0.75"/>
+  <text x="360" y="344" text-anchor="middle" font-size="13" font-weight="600" fill="#27500A">Goal: reasoning and answer always agree</text>
+  <text x="360" y="362" text-anchor="middle" font-size="11" fill="#3B6D11">Not just the right number — the right path that leads to it</text>
+
+  <text x="360" y="420" text-anchor="middle" font-size="10" fill="#aaa">Scene 10 / 10  •  axiomforgeai.svg</text>
+</g>
+
+</svg>

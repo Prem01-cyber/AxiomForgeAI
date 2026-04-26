@@ -10,37 +10,39 @@ AxiomForgeAI is built around that idea.
 
 Instead of treating math reasoning as a one-shot generation problem, AxiomForgeAI turns it into a practice environment. The model does not simply answer a question and move on. It attempts the same problem multiple ways, receives feedback on both the reasoning path and the final answer, and learns from the attempts where the two agree.
 
+[GitHub Code](https://github.com/Prem01-cyber/AxiomForgeAI)
+
+[Hugging Face Space](https://huggingface.co/spaces/jampuramprem/AxiomForgeAI)
+
 ## The Architecture
 
 ![AxiomForgeAI architecture](./images/blog_flow/architecture.svg)
 
-AxiomForgeAI is a training loop around one simple idea: a math solution should be judged by whether the reasoning path and the final answer support each other.
+AxiomForgeAI is a phase-controlled practice loop. It starts with grounded-only training, ramps self-play once grounded answer and step quality are stable, then keeps a grounded fallback if quality drops. Each selected problem is solved multiple ways, scored, and compared with GRPO.
 
-The environment first selects one task. It can come from a grounded dataset problem with a known answer, or from a self-play question written from a curriculum target. Only after that task is selected does the model sample `K` candidate solutions. The environment scores each attempt, and GRPO compares the attempts within that same problem group.
+Grounded problems come from GSM8K or MATH and include a known answer. Self-play problems start from a curriculum target, then the model writes the question. After either path produces one selected problem, the model samples `K` solution attempts.
 
-That is the important part. The model is not rewarded for sounding fluent. It is rewarded when the chain of reasoning and the final answer line up.
+Those attempts are scored for answer correctness, reasoning quality, chain consistency, formatting, and question quality when self-play is used. GRPO compares attempts only within the same problem group, so the learning signal is contrast: which reasoning path held together best.
 
-## Where Practice Comes From
+## Grounded And Self-Play Practice
 
 ![Task sources](./images/blog_flow/task-sources.svg)
 
-The environment uses two sources of problems.
+The grounded path is the anchor. It gives the reward system a known final answer, which keeps training tied to objective correctness while the model is still learning the format and reasoning style.
 
-Grounded practice starts with dataset problems from sources like GSM8K or MATH. These problems come with known final answers, so the environment has a reliable anchor for correctness.
+The self-play path adds new practice only after that anchor is stable. Here, the generated question is also judged before its solution reward is trusted. A useful self-play question should match the target topic, fit the target difficulty, be clear, be novel, and be solvable.
 
-Self-play starts later. The curriculum selects a skill and difficulty, and the model writes a new question. That question is only useful if it is clear, solvable, on-topic, and appropriately difficult. This keeps self-play from becoming random problem generation.
-
-Both sources eventually become the same interface: one selected problem. From there, the model samples multiple candidate solutions and the environment compares the resulting reasoning paths.
+That is why self-play is not just “more data.” It is filtered practice. Bad questions do not become useful training signal just because the model wrote them.
 
 ## What Gets Checked
 
 ![Grading signals](./images/blog_flow/grading.svg)
 
-AxiomForgeAI does not rely on a single reward signal. A final answer check is useful, but it is not enough. A process score is useful, but it is also not enough. The environment combines several signals so that a polished but wrong solution does not look good, and a lucky answer with weak reasoning does not look good either.
+AxiomForgeAI does not rely on a single reward signal. Grounded attempts are anchored by the gold final answer, but the environment also checks whether the reasoning steps are valid, whether the correct prefix stays unbroken, and whether the final answer is parseable.
 
-For grounded problems, the gold answer anchors correctness. For all attempts, the environment also looks at reasoning quality, chain consistency, symbolic arithmetic where possible, and whether the answer can be parsed cleanly. For self-play, the generated question itself is scored before the solution reward is trusted.
+For self-play, the question is part of the reward too. The generated problem is checked for topic fit, difficulty fit, clarity, novelty, and solvability. The solution reward is still dominated by reasoning quality and chain integrity, and the question bonus is gated if the solution is broken.
 
-The result is one score per attempt. That score is not the end of training. It becomes useful because there are other attempts for the same problem.
+The result is one score per attempt. That score becomes useful only because the model produced other attempts for the same problem, giving GRPO something to compare.
 
 ## Why GRPO Fits
 
@@ -68,16 +70,39 @@ The model learns to solve problems with reasoning that supports the answer. It a
 
 That makes the loop different from ordinary fine-tuning. The model is not only seeing more answers. It is practicing, being checked, and learning from the solution paths that survived verification.
 
-## Where Examples Will Go
+## Results
 
-This section will include real model responses from the run.
+These plots come from a single GPU training run and focus on the core question: did the model get better at making its reasoning and final answer agree?
 
-- an example where the model had good steps but a wrong final answer
-- an example where the model guessed correctly but the reasoning was weak
-- an example after training where the reasoning chain and final answer agree
-- a self-generated problem that passed the quality checks
+### Evaluation Quality Over Training
 
-These examples are important because the project is not only about a metric. The clearest evidence is seeing the model become better at making the path and the answer line up.
+![Evaluation quality over training](images/plot1_eval_quality.png)
+
+The environment tracks final correctness, solution quality, step validity, and how long the reasoning chain stays correct. All four move upward together, which suggests the model is not just finding better final answers. It is also producing reasoning that holds up longer.
+
+### Training Journey
+
+![Training journey across all 30 iterations](images/plot2_training_journey.png)
+
+Training starts with grounded practice on problems with known answers. Self-play is introduced only after the grounded signal is stable, so the model does not train on its own generated problems too early. The transition is conditional, not just a timer.
+
+### Self-Play Curriculum
+
+![Self-play curriculum ramp and question quality](images/plot3_selfplay_success.png)
+
+By the end of training, most practice came from self-play. The important part is that generated problems stayed solvable and novel even after self-play became a larger share of training. That makes the ramp meaningful: self-play added useful practice instead of recycled noise.
+
+### Reward Confidence
+
+![Reward confidence and skipped groups](images/plot4_reward_confidence.png)
+
+The reward spread shows how much contrast exists between the model's best and worst attempts. Wide spread gives GRPO something to learn from. Skipped groups are cases where attempts are too similar to compare usefully. That rate falls as harder material enters the curriculum, which suggests the comparison signal stays useful.
+
+### Step-Level Reasoning Quality
+
+![Step accuracy and LCCP across training](images/plot5_reasoning_quality.png)
+
+Step accuracy checks whether each line of reasoning is valid. Chain integrity checks whether those valid steps form an unbroken path to the answer. Both improve together, which means the model is building solutions that hold together more often instead of only producing better-looking outputs.
 
 ## Why This Matters
 
