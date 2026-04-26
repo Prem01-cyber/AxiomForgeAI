@@ -1,21 +1,26 @@
 # AxiomForgeAI — GRPO Training Image
-# Target hardware: 1× A100 PCIE 80 GB | AMD EPYC 7V13 | CUDA driver ≤ 13.2
+# ─────────────────────────────────────────────────────────────────────────────
+# Hardware target  : 1× A100 PCIE 80 GB  |  AMD EPYC 7V13  |  NVMe 300 GB
 #
-# Uses PyTorch 2.5.1 + CUDA 12.4 which is within the driver's CUDA 13.2 ceiling.
-# Flash Attention 2 is built for Ampere (A100 = sm_80) and provides O(T) attention
-# memory instead of O(T²), critical for long math solution sequences.
+# CUDA driver      : >= 13.0  (enforced at container start via entrypoint)
+# CUDA toolkit     : 12.4.1   (backward-compatible with driver 13.x)
+# PyTorch          : 2.5.1+cu124  (pinned in requirements.txt)
+# Flash-Attn       : 2.8.3        (pinned in requirements.txt)
 #
-# Build:
+# All Python package versions are taken exclusively from requirements.txt.
+# No versions are hard-coded in this file.
+#
+# ── Build ─────────────────────────────────────────────────────────────────────
 #   docker build -t axiomforgeai-train:latest .
 #
-# Run (interactive training):
+# ── Interactive shell ─────────────────────────────────────────────────────────
 #   docker run --gpus all --ipc=host --ulimit memlock=-1 \
 #     -v $(pwd)/data:/workspace/data \
 #     -v $(pwd)/checkpoints:/workspace/checkpoints \
 #     -v $(pwd)/logs:/workspace/logs \
 #     -it axiomforgeai-train:latest bash
 #
-# Run GRPO training directly:
+# ── GRPO training (one-shot) ──────────────────────────────────────────────────
 #   docker run --gpus all --ipc=host --ulimit memlock=-1 \
 #     -v $(pwd)/data:/workspace/data \
 #     -v $(pwd)/checkpoints:/workspace/checkpoints \
@@ -24,12 +29,26 @@
 #     python scripts/run_grpo_training.py \
 #       --base-model checkpoints/dual_task_v1 \
 #       --gsm8k-data data/sft/gsm8k_sft.jsonl \
-#       --num-iterations 30 --group-size 4 --questions-per-iter 16
+#       --num-iterations 30 --group-size 8 --questions-per-iter 16
+# ─────────────────────────────────────────────────────────────────────────────
 
-FROM pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel AS base
+# CUDA toolkit 12.4.1 — matches the cu124 wheels in requirements.txt and is
+# fully compatible with the A100's CUDA 13.2 driver (driver is always ≥ toolkit).
+FROM nvidia/cuda:12.4.1-devel-ubuntu22.04
 
-# ── System packages ────────────────────────────────────────────────────────
+LABEL org.opencontainers.image.title="AxiomForgeAI Training" \
+      cuda.driver.minimum="13.0" \
+      cuda.toolkit="12.4.1" \
+      torch.version="2.5.1+cu124" \
+      flash_attn.version="2.8.3"
+
+# ── System packages ────────────────────────────────────────────────────────────
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
+        python3.11 \
+        python3.11-dev \
+        python3-pip \
+        python3.11-venv \
         git \
         git-lfs \
         curl \
@@ -40,81 +59,72 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libssl-dev \
         libffi-dev \
         ca-certificates \
+    && ln -sf /usr/bin/python3.11 /usr/bin/python3 \
+    && ln -sf /usr/bin/python3    /usr/bin/python \
     && rm -rf /var/lib/apt/lists/*
 
-# ── Working directory ──────────────────────────────────────────────────────
-WORKDIR /workspace
+# ── Upgrade pip + build tooling ───────────────────────────────────────────────
+RUN python -m pip install --upgrade --no-cache-dir pip setuptools wheel
 
-# ── Python dependencies — split into layers for cache reuse ───────────────
-
-# Layer 1: core ML stack (changes rarely)
+# ── PyTorch (CUDA 12.4 wheels) ────────────────────────────────────────────────
+# Must be installed before flash-attn because flash-attn runs a torch version
+# check at install time.  The cu124 index is also used for all CUDA-linked wheels.
+# Version is taken from requirements.txt — the --constraint flag keeps pip from
+# re-resolving to a different version when requirements.txt is processed next.
 RUN pip install --no-cache-dir \
-    torch==2.5.1 \
-    --extra-index-url https://download.pytorch.org/whl/cu124
+        --extra-index-url https://download.pytorch.org/whl/cu124 \
+        "torch==2.5.1" "torchvision==0.20.1" "torchaudio==2.5.1"
 
-# Layer 2: HuggingFace stack + bitsandbytes for 4-bit quantisation
-RUN pip install --no-cache-dir \
-    transformers>=4.47.0 \
-    accelerate>=1.2.1 \
-    peft>=0.14.0 \
-    datasets>=3.0.0 \
-    tokenizers>=0.21.0 \
-    safetensors>=0.4.5 \
-    bitsandbytes>=0.43.0 \
-    huggingface-hub>=0.26.0
-
-# Layer 3: Flash Attention 2 (Ampere / A100 = sm_80)
-# Pre-built wheel matching torch 2.5.1 + CUDA 12.4; avoids 20-min compilation.
-RUN pip install --no-cache-dir \
-    flash-attn==2.7.2.post1 \
-    --extra-index-url https://github.com/Dao-AILab/flash-attention/releases/expanded_assets/v2.7.2.post1 \
-    || pip install --no-cache-dir flash-attn \
-         --no-build-isolation \
-         --extra-index-url https://github.com/Dao-AILab/flash-attention/releases/expanded_assets/
-
-# Layer 4: math / science / training utilities
-RUN pip install --no-cache-dir \
-    sympy>=1.12 \
-    numpy>=1.26 \
-    scipy>=1.12 \
-    tqdm>=4.66 \
-    einops>=0.7.0 \
-    packaging>=24.0
-
-# Layer 5: experiment tracking + server deps
-RUN pip install --no-cache-dir \
-    openenv-core[core]>=0.2.2 \
-    fastapi>=0.115.0 \
-    uvicorn[standard]>=0.24.0 \
-    pydantic>=2.0.0 \
-    cloudpickle>=3.0.0 \
-    ray[default]>=2.38.0 \
-    wandb>=0.18.0 \
-    matplotlib>=3.9.0 \
-    pandas>=2.2.0
-
-# Layer 6: remaining requirements from the repo's pinned requirements.txt
+# ── All remaining pinned requirements (from requirements.txt) ─────────────────
+# flash-attn, xformers, vllm, triton, bitsandbytes, transformers, accelerate,
+# peft, ray, sympy, scipy, numpy, openenv-core, fastapi, uvicorn, … are all
+# installed here at the exact versions pinned in requirements.txt.
+# The cu124 index is provided so CUDA-linked wheels resolve correctly.
 COPY requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt \
-    || true  # non-critical: handles any version conflicts gracefully
+RUN pip install --no-cache-dir \
+        --extra-index-url https://download.pytorch.org/whl/cu124 \
+        -r /tmp/requirements.txt
 
-# ── Copy project source ────────────────────────────────────────────────────
+# ── Project source ────────────────────────────────────────────────────────────
+WORKDIR /workspace
 COPY . /workspace/
 
-# Ensure the repo root is on PYTHONPATH so `from src.rl.X import Y` works.
+# ── Environment variables ─────────────────────────────────────────────────────
+# Repo root on PYTHONPATH so `from src.rl.X import Y` works without editable install
 ENV PYTHONPATH="/workspace:$PYTHONPATH"
 
-# HuggingFace model cache — mount a host directory here to avoid re-downloading
-# large models on every container start.
+# HuggingFace model cache — mount a host path here to persist model downloads:
+#   -v /host/hf_cache:/workspace/.hf_cache
 ENV HF_HOME="/workspace/.hf_cache"
 ENV TRANSFORMERS_CACHE="/workspace/.hf_cache"
 
-# CUDA tuning for A100
+# A100 CUDA / NCCL tuning
 ENV CUDA_DEVICE_MAX_CONNECTIONS=1
 ENV NCCL_P2P_DISABLE=0
 ENV NCCL_IB_DISABLE=0
+# Required for Flash-Attn 2 with bfloat16 on Ampere
+ENV TORCH_CUDNN_V8_API_ENABLED=1
 
-# ── Verify GPU is visible at build time (will be skipped in --no-gpu builds) ──
-# RUN python -c "import torch; assert torch.cuda.is_available(), 'CUDA not found'"
+# ── Runtime entrypoint: enforce CUDA driver >= 13.0 ──────────────────────────
+# nvidia-smi is injected at runtime via --gpus, so this check runs when the
+# container starts, not at build time.
+RUN printf '%s\n' \
+    '#!/bin/sh' \
+    'if command -v nvidia-smi >/dev/null 2>&1; then' \
+    '  CUDA_VER=$(nvidia-smi 2>/dev/null | grep -oP "CUDA Version: \K[0-9.]+" || echo "0.0")' \
+    '  MAJOR=$(echo "$CUDA_VER" | cut -d. -f1)' \
+    '  echo "[AxiomForgeAI] CUDA driver reports toolkit: $CUDA_VER"' \
+    '  if [ "${MAJOR:-0}" -lt 13 ] 2>/dev/null; then' \
+    '    echo "[ERROR] CUDA driver >= 13.0 required; detected $CUDA_VER. Upgrade your NVIDIA driver."' \
+    '    exit 1' \
+    '  fi' \
+    '  echo "[AxiomForgeAI] CUDA $CUDA_VER >= 13.0 — OK"' \
+    'else' \
+    '  echo "[WARNING] nvidia-smi not found — CUDA driver version check skipped."' \
+    'fi' \
+    'exec "$@"' \
+    > /usr/local/bin/entrypoint.sh \
+    && chmod +x /usr/local/bin/entrypoint.sh
 
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["bash"]

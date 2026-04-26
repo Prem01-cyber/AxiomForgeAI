@@ -31,7 +31,7 @@ import argparse
 import json
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
 # Keep in sync with src.agent.math_agent.SOLVER_SYSTEM_PROMPT
 SOLVER_SYSTEM_PROMPT = (

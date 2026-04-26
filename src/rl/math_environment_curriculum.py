@@ -20,7 +20,7 @@ from sympy.parsing.sympy_parser import parse_expr
 from tqdm.auto import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from src.config.prompts import create_solver_messages
+from src.config.prompts import create_generator_messages, create_solver_messages
 from src.rl.curriculum_manager import CurriculumManager
 from src.rl.expert_panel import SimulatedExpertPanel
 from src.rl.mdp_components import Action, State, Trajectory, Transition
@@ -165,6 +165,13 @@ class CurriculumMathEnvironment:
     def format_solution_prompt(self, question: str) -> str:
         """Format a question into a chat-templated solver prompt."""
         messages = create_solver_messages(question)
+        return self.tokenizer.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=True
+        )
+
+    def format_question_generation_prompt(self, instruction: str) -> str:
+        """Format a curriculum instruction into a chat-templated generator prompt."""
+        messages = create_generator_messages(instruction)
         return self.tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True
         )
@@ -1076,8 +1083,10 @@ class CurriculumMathEnvironment:
         # default is .train()).  Qwen2.5 has zero dropout so this is
         # currently cosmetic, but cheap insurance against any future
         # model swap that has real stochastic layers.
-        self.policy.eval()
-        self.value.eval()
+        if self.policy is not None:
+            self.policy.eval()
+        if self.value is not None:
+            self.value.eval()
 
         # Grounded rollouts: only if we actually have QA pairs loaded.
         if grounded_ratio > 0.0 and self.grounded_qa_pairs:
