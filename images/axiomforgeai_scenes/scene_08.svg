@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="8 22 704 376" width="704" height="376">
+<defs>
+  <!-- Arrow marker -->
+  <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#6F6C66" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#4D6F93" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#42613B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <marker id="arr-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#716A94" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+
+  <!-- Total duration: 10 scenes × 6s = 60s loop -->
+  <!-- Each scene: visible 0s–6s within its window, crossfade 0.4s in/out -->
+  <!-- Scene offsets (in 60s total): S1=0, S2=6, S3=12, S4=18, S5=24, S6=30, S7=36, S8=42, S9=48, S10=54 -->
+
+  <style>
+    text { font-family: Inter, Arial, sans-serif; }
+  </style>
+</defs>
+<g>
+  <rect x="96" y="24" width="528" height="46" rx="3" fill="#FBFAF7" stroke="#D6D1C8" stroke-width="0.75"/>
+
+  <text x="360" y="40" text-anchor="middle" font-size="17" font-weight="700" fill="#171715">Self-improvement loop</text>
+  <text x="360" y="62" text-anchor="middle" font-size="12" fill="#55524D">Sample attempts, verify them, compare the group, then update</text>
+
+  <!-- 5 nodes arranged in a cycle: top, right, bottom-right, bottom-left, left -->
+  <!-- Node 1: Select task (top center) -->
+  <rect x="272" y="80" width="176" height="52" rx="3" fill="#F0EEF7" stroke="#5E587A" stroke-width="0.75"/>
+  <text x="360" y="111" text-anchor="middle" font-size="13" font-weight="600" fill="#46405F">Select task</text>
+
+  <!-- Node 2: Sample K (right) -->
+  <rect x="530" y="154" width="164" height="52" rx="3" fill="#EAF0F7" stroke="#355C7D" stroke-width="0.75"/>
+  <text x="612" y="184" text-anchor="middle" font-size="13" font-weight="600" fill="#23415A">Sample K attempts</text>
+
+  <!-- Node 3: Verify (bottom right) -->
+  <rect x="480" y="274" width="196" height="52" rx="3" fill="#F3F1EC" stroke="#5B5A55" stroke-width="0.75"/>
+  <text x="578" y="298" text-anchor="middle" font-size="12" font-weight="700" fill="#282824">Verify steps</text>
+  <text x="578" y="316" text-anchor="middle" font-size="12" font-weight="700" fill="#282824">+ answer</text>
+
+  <!-- Node 4: Compare (left) -->
+  <rect x="26" y="154" width="164" height="52" rx="3" fill="#ECF4EA" stroke="#42613B" stroke-width="0.75"/>
+  <text x="108" y="184" text-anchor="middle" font-size="13" font-weight="600" fill="#2F4A2A">Compare group</text>
+
+  <!-- Node 5: GRPO (bottom left) -->
+  <rect x="44" y="274" width="196" height="52" rx="3" fill="#F0EEF7" stroke="#716A94" stroke-width="0.75"/>
+  <text x="142" y="304" text-anchor="middle" font-size="13" font-weight="600" fill="#46405F">GRPO update</text>
+
+  <!-- Arrows connecting the cycle -->
+  <!-- 1->2: Select task -> Sample K -->
+  <path d="M448 106 Q530 106 530 154" fill="none" stroke="#5E587A" stroke-width="1.5" marker-end="url(#arr-purple)"/>
+  <!-- 2->3: Sample K -> Verify -->
+  <path d="M612 206 Q612 274 676 274" fill="none" stroke="#355C7D" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+  <!-- 3->4: Verify -> Compare -->
+  <path d="M480 300 Q300 300 190 206" fill="none" stroke="#5B5A55" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- 4->5: Compare -> GRPO -->
+  <path d="M108 206 Q108 260 142 274" fill="none" stroke="#42613B" stroke-width="1.5" marker-end="url(#arr-green)"/>
+  <!-- 5->1: GRPO -> Select task -->
+  <path d="M44 300 Q26 300 26 106 Q120 106 272 106" fill="none" stroke="#716A94" stroke-width="1.5" marker-end="url(#arr-purple)"/>
+
+  <!-- Center label -->
+  <text x="360" y="204" text-anchor="middle" font-size="14" font-weight="600" fill="#343330">Self-improvement</text>
+  <text x="360" y="224" text-anchor="middle" font-size="13" font-weight="500" fill="#343330">loop</text>
+  <text x="360" y="248" text-anchor="middle" font-size="11" fill="#6F6C66">Adjust task mix</text>
+  <text x="360" y="264" text-anchor="middle" font-size="11" fill="#6F6C66">after each batch</text>
+
+  <text x="360" y="380" text-anchor="middle" font-size="12" fill="#5E587A" font-weight="500">Each loop rewards attempts where the steps and final answer agree</text>
+
+</g>
+</svg>
