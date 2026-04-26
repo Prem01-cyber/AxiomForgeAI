@@ -29,7 +29,7 @@ This project builds a practice loop around that signal. The model first works on
 
 The environment is a practice loop for math reasoning. Each training group starts with one problem, asks the model for multiple solution attempts, scores those attempts from several angles, and uses GRPO to reinforce the attempts that are stronger than the rest of the group.
 
-![AxiomForgeAI environment overview](docs/environment_overview.png)
+![AxiomForgeAI environment overview](docs/environment_overview.svg)
 
 The environment has two task sources:
 
