@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 260" width="820" height="260">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#5B5A55" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      text { font-family: Inter, Arial, sans-serif; }
+      .title { font-size: 17px; font-weight: 700; fill: #171715; }
+      .label { font-size: 13px; font-weight: 700; fill: #26323F; }
+      .small { font-size: 11px; fill: #55524D; }
+    </style>
+  </defs>
+
+  <rect x="140" y="18" width="540" height="42" rx="4" fill="#FBFAF7" stroke="#D6D1C8"/>
+  <text x="410" y="45" text-anchor="middle" class="title">Two Ways To Create Practice</text>
+
+  <rect x="56" y="98" width="210" height="90" rx="4" fill="#ECF4EA" stroke="#42613B"/>
+  <text x="161" y="128" text-anchor="middle" class="label">Grounded source</text>
+  <text x="161" y="150" text-anchor="middle" class="small">Dataset problem</text>
+  <text x="161" y="168" text-anchor="middle" class="small">Known final answer</text>
+
+  <rect x="305" y="98" width="210" height="90" rx="4" fill="#F0EEF7" stroke="#5E587A"/>
+  <text x="410" y="128" text-anchor="middle" class="label">Self-play source</text>
+  <text x="410" y="150" text-anchor="middle" class="small">Curriculum chooses skill</text>
+  <text x="410" y="168" text-anchor="middle" class="small">Model writes question</text>
+
+  <rect x="574" y="110" width="190" height="66" rx="4" fill="#FBFAF7" stroke="#D6D1C8"/>
+  <text x="669" y="138" text-anchor="middle" class="label">Same interface</text>
+  <text x="669" y="157" text-anchor="middle" class="small">one problem, K attempts</text>
+
+  <path d="M266 143 L574 143" fill="none" stroke="#5B5A55" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M515 143 L574 143" fill="none" stroke="#5B5A55" stroke-width="1.5" marker-end="url(#arrow)"/>
+</svg>

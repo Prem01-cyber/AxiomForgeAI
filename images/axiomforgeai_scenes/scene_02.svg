@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="26 22 670 326" width="670" height="326">
+<defs>
+  <!-- Arrow marker -->
+  <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#6F6C66" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#4D6F93" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#42613B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <marker id="arr-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#716A94" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+
+  <!-- Total duration: 10 scenes × 6s = 60s loop -->
+  <!-- Each scene: visible 0s–6s within its window, crossfade 0.4s in/out -->
+  <!-- Scene offsets (in 60s total): S1=0, S2=6, S3=12, S4=18, S5=24, S6=30, S7=36, S8=42, S9=48, S10=54 -->
+
+  <style>
+    text { font-family: Inter, Arial, sans-serif; }
+  </style>
+</defs>
+<g>
+  <rect x="96" y="24" width="528" height="46" rx="3" fill="#FBFAF7" stroke="#D6D1C8" stroke-width="0.75"/>
+
+  <text x="360" y="40" text-anchor="middle" font-size="17" font-weight="700" fill="#171715">The training environment</text>
+  <text x="360" y="62" text-anchor="middle" font-size="12" fill="#55524D">A phase controller decides what the model practices each batch</text>
+
+  <!-- Math model -->
+  <rect x="270" y="88" width="180" height="60" rx="3" fill="#EAF0F7" stroke="#355C7D" stroke-width="1"/>
+  <text x="360" y="114" text-anchor="middle" font-size="14" font-weight="600" fill="#23415A">Math model</text>
+  <text x="360" y="134" text-anchor="middle" font-size="11" fill="#355C7D">Compact reasoning model</text>
+
+  <!-- Arrow down -->
+  <line x1="360" y1="148" x2="360" y2="178" stroke="#6F6C66" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Phase controller -->
+  <rect x="258" y="178" width="204" height="56" rx="3" fill="#F0EEF7" stroke="#5E587A" stroke-width="1"/>
+  <text x="360" y="203" text-anchor="middle" font-size="14" font-weight="600" fill="#46405F">Phase controller</text>
+  <text x="360" y="221" text-anchor="middle" font-size="11" fill="#5E587A">Controls task mix per batch</text>
+
+  <!-- Three phases -->
+  <rect x="44" y="100" width="168" height="54" rx="3" fill="#ECF4EA" stroke="#42613B" stroke-width="0.5"/>
+  <text x="128" y="122" text-anchor="middle" font-size="12" font-weight="700" fill="#263F24">Phase 1</text>
+  <text x="128" y="140" text-anchor="middle" font-size="11" fill="#42613B">Grounded problems only</text>
+
+  <rect x="44" y="170" width="168" height="54" rx="3" fill="#EDF6F2" stroke="#496E64" stroke-width="0.5"/>
+  <text x="128" y="192" text-anchor="middle" font-size="12" font-weight="600" fill="#36534C">Phase 2</text>
+  <text x="128" y="210" text-anchor="middle" font-size="11" fill="#496E64">Self-play gradually added</text>
+
+  <rect x="44" y="240" width="168" height="54" rx="3" fill="#F0EEF7" stroke="#716A94" stroke-width="0.5"/>
+  <text x="128" y="262" text-anchor="middle" font-size="12" font-weight="700" fill="#3C3657">Phase 3</text>
+  <text x="128" y="280" text-anchor="middle" font-size="11" fill="#5E587A">Mixed + fallback recovery</text>
+
+  <!-- connector from phases to controller -->
+  <line x1="212" y1="206" x2="256" y2="206" stroke="#b4b2a9" stroke-width="0.5" stroke-dasharray="3 3"/>
+
+  <!-- Stable accuracy note -->
+  <rect x="510" y="130" width="168" height="110" rx="3" fill="#FBFAF7" stroke="#D6D1C8" stroke-width="0.5"/>
+  <text x="594" y="154" text-anchor="middle" font-size="11" font-weight="600" fill="#343330">Fallback logic</text>
+  <text x="594" y="173" text-anchor="middle" font-size="10" fill="#55524D">If answer quality drops,</text>
+  <text x="594" y="189" text-anchor="middle" font-size="10" fill="#55524D">controller reverts to</text>
+  <text x="594" y="205" text-anchor="middle" font-size="10" fill="#55524D">grounded-only until</text>
+  <text x="594" y="221" text-anchor="middle" font-size="10" fill="#55524D">stability is restored</text>
+  <line x1="462" y1="206" x2="508" y2="190" stroke="#b4b2a9" stroke-width="0.5" stroke-dasharray="3 3"/>
+
+  <text x="360" y="330" text-anchor="middle" font-size="12" fill="#5E587A" font-weight="500">Phase 1 is grounded-only. Self-play enters only when the model is ready.</text>
+
+</g>
+</svg>
