@@ -1,0 +1,18 @@
+@startuml training_phases
+left to right direction
+skinparam handwritten false
+skinparam monochrome true
+skinparam shadowing false
+skinparam linetype ortho
+
+rectangle "Grounded warmup" as Warmup
+rectangle "Self-play ramp" as Ramp
+rectangle "Continuous improvement" as Improve
+rectangle "Safety fallback\nif quality drops" as Fallback
+
+Warmup --> Ramp
+Ramp --> Improve
+Ramp --> Fallback
+Fallback --> Warmup
+Improve --> Ramp
+@enduml

@@ -1,6 +1,6 @@
 ---
-title: Axiomforgeai Environment Server
-emoji: 🎰
+title: AxiomForgeAI Environment Server
+emoji: 🌌
 colorFrom: indigo
 colorTo: pink
 sdk: docker
@@ -11,245 +11,107 @@ tags:
   - openenv
 ---
 
-# Axiomforgeai Environment
+# AxiomForgeAI
 
-A simple test environment that echoes back messages. Perfect for testing the env APIs as well as demonstrating environment usage patterns.
+[![OpenEnv](https://img.shields.io/badge/Powered%20by-OpenEnv-blue)](https://github.com/meta-pytorch/OpenEnv)
+
+*A self-improvement loop for math reasoning, where a compact model practices, gets grounded feedback, and learns from stronger solution paths.*
+
+## The Problem
+
+Self-improvement is the real capability gap. A math model can write a fluent solution that looks correct, but when the reasoning is wrong, normal inference gives it no way to turn that mistake into practice.
+
+That matters most in math reasoning, where one small arithmetic or logic error can break the final answer. The challenge is not just getting one problem right. It is building a loop where the model can generate attempts, verify its steps, learn which reasoning paths worked, and move toward harder problems over time.
+
+AxiomForgeAI builds that loop for a 1.5B parameter math model. It turns reasoning into a training environment where the model practices grounded problems, creates its own challenges, receives verifiable feedback, and improves from the best reasoning paths it discovers.
+
+## The Environment
+
+The agent trains on two kinds of tasks: grounded math problems with known answers, and self-generated challenges from a curriculum.
+
+In the grounded lane, the environment samples a dataset problem from sources such as GSM8K or MATH and keeps the gold final answer available for verification. In the self-play lane, the curriculum selects a target skill and difficulty, then the model generates a new question before attempting to solve it.
+
+Both lanes then follow the same learning shape: sample multiple solution attempts, grade them with independent signals, compare attempts inside the group, and update the policy with GRPO. The curriculum keeps the model near problems that are neither too easy nor too hard.
+
+Diagram source: [`docs/environment-overview.puml`](docs/environment-overview.puml)
+
+## How Self-Improvement Works
+
+AxiomForgeAI treats reasoning as practice, not a one-shot answer. The model sees a problem, generates several candidate solutions, and receives feedback from graders that do not rely on the same sampled answer being correct by chance.
+
+GRPO then compares attempts within the same problem group. Stronger reasoning paths receive positive relative signal, weaker paths receive less, and groups with no useful reward difference can be skipped. Over time, the curriculum adapts the next problems so training stays in the useful middle: challenging enough to create learning signal, but not so hard that every attempt fails.
+
+The loop is intentionally simple:
+
+```text
+practice -> generate multiple attempts -> verify -> compare -> reinforce -> adapt difficulty -> repeat
+```
+
+## Reward System
+
+The reward is built from separate checks so the model is not trained on a single fragile signal.
+
+- **Answer check:** when a gold answer exists, the final numeric answer is compared against the expected result.
+- **Process reward:** a PRM scores the quality of intermediate reasoning steps.
+- **Symbolic verification:** arithmetic and parseable expressions are normalized and checked with SymPy where possible.
+- **Formatting:** solutions are rewarded for producing clear, parseable final answers.
+- **Question quality:** self-generated problems are scored for topic fit, clarity, target difficulty, novelty, and solvability.
+
+Diagram source: [`docs/reward-system.puml`](docs/reward-system.puml)
+
+## Training Phases
+
+The system is designed to start from stable feedback before asking the model to rely heavily on its own generated tasks. Grounded warmup gives the policy a reliable base signal, self-play ramps in curriculum-generated questions, and quality checks can push training back toward grounded data if generated questions become unclear or unsolvable.
+
+Diagram source: [`docs/training-phases.puml`](docs/training-phases.puml)
+
+## Results
+
+This repository includes the training and demo paths for reporting results, but no completed `metrics.jsonl`, plots, or before/after demo output are currently committed. To avoid unsupported claims, this README does not report accuracy or reward improvements yet.
+
+The GRPO trainer writes run logs and metrics for reward, grounded accuracy, curriculum behavior, and evaluation checkpoints. The demo script can read a trained checkpoint plus `metrics.jsonl` and produce a judge-friendly before/after comparison with example solutions.
+
+```bash
+python scripts/run_grpo_training.py \
+  --base-model checkpoints/dual_task_v1 \
+  --gsm8k-data data/sft/gsm8k_test.jsonl \
+  --num-iterations 3 \
+  --group-size 4 \
+  --questions-per-iter 8 \
+  --no-prm \
+  --skip-initial-eval \
+  --run-name smoke_grpo
+```
+
+```bash
+python scripts/demo_before_after.py \
+  --baseline-model checkpoints/dual_task_v1 \
+  --trained-model checkpoints/grpo/<run>/best_policy \
+  --metrics-jsonl checkpoints/grpo/<run>/metrics.jsonl \
+  --problems data/sft/gsm8k_test.jsonl \
+  --max-samples 100 \
+  --records-out results/demo.json
+```
+
+## Why It Matters
+
+Low-cost self-improvement for compact math models matters because many useful deployments cannot assume large hosted models, expensive training loops, or public data movement. A 1.5B parameter model is small enough to make local experimentation realistic, but still capable enough to expose the hard part: reasoning does not improve unless the system can turn mistakes into structured practice.
+
+AxiomForgeAI is also a reusable pattern. Math is the first domain because verification is unusually clear, but the same environment idea applies to other tasks where attempts can be checked, compared, and turned into reward: code, logic, structured data transformations, and scientific problem solving.
 
 ## Quick Start
 
-The simplest way to use the Axiomforgeai environment is through the `AxiomforgeaiEnv` class:
-
-```python
-from AxiomForgeAI import AxiomforgeaiAction, AxiomforgeaiEnv
-
-try:
-    # Create environment from Docker image
-    AxiomForgeAIenv = AxiomforgeaiEnv.from_docker_image("AxiomForgeAI-env:latest")
-
-    # Reset
-    result = AxiomForgeAIenv.reset()
-    print(f"Reset: {result.observation.echoed_message}")
-
-    # Send multiple messages
-    messages = ["Hello, World!", "Testing echo", "Final message"]
-
-    for msg in messages:
-        result = AxiomForgeAIenv.step(AxiomforgeaiAction(message=msg))
-        print(f"Sent: '{msg}'")
-        print(f"  → Echoed: '{result.observation.echoed_message}'")
-        print(f"  → Length: {result.observation.message_length}")
-        print(f"  → Reward: {result.reward}")
-
-finally:
-    # Always clean up
-    AxiomForgeAIenv.close()
-```
-
-That's it! The `AxiomforgeaiEnv.from_docker_image()` method handles:
-- Starting the Docker container
-- Waiting for the server to be ready
-- Connecting to the environment
-- Container cleanup when you call `close()`
-
-## Building the Docker Image
-
-Before using the environment, you need to build the Docker image:
+AxiomForgeAI is built on the OpenEnv standard and exposes a Gym-style `reset` / `step` interface.
 
 ```bash
-# From project root
 docker build -t AxiomForgeAI-env:latest -f server/Dockerfile .
 ```
 
-## Deploying to Hugging Face Spaces
-
-You can easily deploy your OpenEnv environment to Hugging Face Spaces using the `openenv push` command:
-
 ```bash
-# From the environment directory (where openenv.yaml is located)
-openenv push
-
-# Or specify options
-openenv push --namespace my-org --private
+openenv push --namespace your-hf-username
 ```
 
-The `openenv push` command will:
-1. Validate that the directory is an OpenEnv environment (checks for `openenv.yaml`)
-2. Prepare a custom build for Hugging Face Docker space (enables web interface)
-3. Upload to Hugging Face (ensuring you're logged in)
+The deployed Space provides a `/ws` WebSocket endpoint for RL training loops.
 
-### Prerequisites
-
-- Authenticate with Hugging Face: The command will prompt for login if not already authenticated
-
-### Options
-
-- `--directory`, `-d`: Directory containing the OpenEnv environment (defaults to current directory)
-- `--repo-id`, `-r`: Repository ID in format 'username/repo-name' (defaults to 'username/env-name' from openenv.yaml)
-- `--base-image`, `-b`: Base Docker image to use (overrides Dockerfile FROM)
-- `--private`: Deploy the space as private (default: public)
-
-### Examples
-
-```bash
-# Push to your personal namespace (defaults to username/env-name from openenv.yaml)
-openenv push
-
-# Push to a specific repository
-openenv push --repo-id my-org/my-env
-
-# Push with a custom base image
-openenv push --base-image ghcr.io/meta-pytorch/openenv-base:latest
-
-# Push as a private space
-openenv push --private
-
-# Combine options
-openenv push --repo-id my-org/my-env --base-image custom-base:latest --private
-```
-
-After deployment, your space will be available at:
-`https://huggingface.co/spaces/<repo-id>`
-
-The deployed space includes:
-- **Web Interface** at `/web` - Interactive UI for exploring the environment
-- **API Documentation** at `/docs` - Full OpenAPI/Swagger interface
-- **Health Check** at `/health` - Container health monitoring
-- **WebSocket** at `/ws` - Persistent session endpoint for low-latency interactions
-
-## Environment Details
-
-### Action
-**AxiomforgeaiAction**: Contains a single field
-- `message` (str) - The message to echo back
-
-### Observation
-**AxiomforgeaiObservation**: Contains the echo response and metadata
-- `echoed_message` (str) - The message echoed back
-- `message_length` (int) - Length of the message
-- `reward` (float) - Reward based on message length (length × 0.1)
-- `done` (bool) - Always False for echo environment
-- `metadata` (dict) - Additional info like step count
-
-### Reward
-The reward is calculated as: `message_length × 0.1`
-- "Hi" → reward: 0.2
-- "Hello, World!" → reward: 1.3
-- Empty message → reward: 0.0
-
-## Advanced Usage
-
-### Connecting to an Existing Server
-
-If you already have a Axiomforgeai environment server running, you can connect directly:
-
-```python
-from AxiomForgeAI import AxiomforgeaiEnv
-
-# Connect to existing server
-AxiomForgeAIenv = AxiomforgeaiEnv(base_url="<ENV_HTTP_URL_HERE>")
-
-# Use as normal
-result = AxiomForgeAIenv.reset()
-result = AxiomForgeAIenv.step(AxiomforgeaiAction(message="Hello!"))
-```
-
-Note: When connecting to an existing server, `AxiomForgeAIenv.close()` will NOT stop the server.
-
-### Using the Context Manager
-
-The client supports context manager usage for automatic connection management:
-
-```python
-from AxiomForgeAI import AxiomforgeaiAction, AxiomforgeaiEnv
-
-# Connect with context manager (auto-connects and closes)
-with AxiomforgeaiEnv(base_url="http://localhost:8000") as env:
-    result = env.reset()
-    print(f"Reset: {result.observation.echoed_message}")
-    # Multiple steps with low latency
-    for msg in ["Hello", "World", "!"]:
-        result = env.step(AxiomforgeaiAction(message=msg))
-        print(f"Echoed: {result.observation.echoed_message}")
-```
-
-The client uses WebSocket connections for:
-- **Lower latency**: No HTTP connection overhead per request
-- **Persistent session**: Server maintains your environment state
-- **Efficient for episodes**: Better for many sequential steps
-
-### Concurrent WebSocket Sessions
-
-The server supports multiple concurrent WebSocket connections. To enable this,
-modify `server/app.py` to use factory mode:
-
-```python
-# In server/app.py - use factory mode for concurrent sessions
-app = create_app(
-    AxiomforgeaiEnvironment,  # Pass class, not instance
-    AxiomforgeaiAction,
-    AxiomforgeaiObservation,
-    max_concurrent_envs=4,  # Allow 4 concurrent sessions
-)
-```
-
-Then multiple clients can connect simultaneously:
-
-```python
-from AxiomForgeAI import AxiomforgeaiAction, AxiomforgeaiEnv
-from concurrent.futures import ThreadPoolExecutor
-
-def run_episode(client_id: int):
-    with AxiomforgeaiEnv(base_url="http://localhost:8000") as env:
-        result = env.reset()
-        for i in range(10):
-            result = env.step(AxiomforgeaiAction(message=f"Client {client_id}, step {i}"))
-        return client_id, result.observation.message_length
-
-# Run 4 episodes concurrently
-with ThreadPoolExecutor(max_workers=4) as executor:
-    results = list(executor.map(run_episode, range(4)))
-```
-
-## Development & Testing
-
-### Direct Environment Testing
-
-Test the environment logic directly without starting the HTTP server:
-
-```bash
-# From the server directory
-python3 server/AxiomForgeAI_environment.py
-```
-
-This verifies that:
-- Environment resets correctly
-- Step executes actions properly
-- State tracking works
-- Rewards are calculated correctly
-
-### Running Locally
-
-Run the server locally for development:
-
-```bash
-uvicorn server.app:app --reload
-```
-
-## Project Structure
-
-```
-AxiomForgeAI/
-├── .dockerignore         # Docker build exclusions
-├── __init__.py            # Module exports
-├── README.md              # This file
-├── openenv.yaml           # OpenEnv manifest
-├── pyproject.toml         # Project metadata and dependencies
-├── uv.lock                # Locked dependencies (generated)
-├── client.py              # AxiomforgeaiEnv client
-├── models.py              # Action and Observation models
-└── server/
-    ├── __init__.py        # Server module exports
-    ├── AxiomForgeAI_environment.py  # Core environment logic
-    ├── app.py             # FastAPI application (HTTP + WebSocket endpoints)
-    └── Dockerfile         # Container image definition
-```
+---
+*Engineered for the OpenEnv Hackathon India 2026*
