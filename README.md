@@ -36,20 +36,18 @@ The environment has two task sources:
 - **Grounded source:** A dataset problem from GSM8K / MATH comes with a known final answer. This gives the environment a reliable anchor for checking whether the model actually reached the right result.
 - **Self-play source:** The curriculum selects a target skill and difficulty. The model writes a new question, then samples multiple solutions to that question. This adds practice beyond static datasets, but only after the grounded signal is stable enough.
 
-Both sources feed the same scoring and update loop. For every selected problem, the model samples `K` candidate solutions. The environment checks final-answer correctness when a gold answer exists, scores reasoning quality with a PRM, verifies arithmetic where possible, checks answer formatting, and scores self-generated questions for clarity, novelty, difficulty fit, and solvability.
+Both sources feed the same scoring and update loop. For every selected problem, the model samples `K` candidate solutions. The environment checks final-answer correctness when a gold answer exists, scores reasoning quality with a PRM, checks chain consistency and symbolic arithmetic where possible, checks answer formatting, and scores self-generated questions for clarity, novelty, difficulty fit, and solvability.
 
 GRPO then compares the `K` attempts against each other. The model is not rewarded for a solution in isolation; the strongest attempt in the group becomes the direction for learning. Training starts grounded-only, gradually mixes in self-play groups, and falls back to grounded practice if generated-question quality or answer correctness drops.
 
 ## How Self-Improvement Works
 
-AxiomForgeAI treats reasoning as practice, not a one-shot answer. Each problem produces a group of candidate solutions. The reward separates answer correctness, step quality, chain consistency, and parseable final-answer format.
+Self-improvement comes from turning each problem into a small comparison. The model does not produce one solution and move on; the environment samples several attempts, scores each attempt, and asks which reasoning path was strongest.
 
-GRPO compares attempts within the same problem group. Stronger attempts receive positive relative signal, weaker attempts receive less, and groups with no useful reward difference can be skipped. Wrong final answers can still provide limited learning signal when the reasoning chain is partially correct, but correct and consistent solutions remain the target.
-
-The loop is intentionally simple:
+GRPO uses that within-group comparison as the learning signal. Attempts with correct answers, stronger reasoning chains, and cleaner final-answer format are reinforced. Attempts with broken chains or unsupported answers become weaker examples.
 
 ```text
-practice -> generate multiple attempts -> verify -> compare -> reinforce -> adapt difficulty -> repeat
+practice -> sample attempts -> verify steps and answer -> compare -> reinforce -> adjust difficulty
 ```
 
 ## Reward System
