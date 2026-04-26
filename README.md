@@ -80,9 +80,12 @@ Training follows a simple three-phase schedule. It starts with grounded-only pra
 
 The GRPO training loop is available in two forms:
 
-- [`scripts/run_grpo_training.py`](scripts/run_grpo_training.py): the main Hugging Face / PyTorch training entry point, with custom GRPO loss, grouped solution sampling, grounded and self-play rewards, checkpointing, and metrics logging.
-- [`train_grpo.ipynb`](train_grpo.ipynb): a notebook version for inspecting or rerunning the training flow interactively.
+- [`scripts/launch_grpo.sh`](scripts/launch_grpo.sh) — the primary launch script; sets CUDA/threading env vars, verifies Flash-Attention, and calls `run_grpo_training.py` with the full parameter set.
+- [`train_grpo.ipynb`](train_grpo.ipynb) — notebook version with the same parameters, structured around `env.reset / env.step / env.state / env.close` for interactive inspection.
 
+```bash
+bash scripts/launch_grpo.sh
+``` 
 ## Results
 
 ## Why It Matters
