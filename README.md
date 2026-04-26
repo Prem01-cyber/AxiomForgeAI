@@ -85,8 +85,53 @@ The GRPO training loop is available in two forms:
 
 ```bash
 bash scripts/launch_grpo.sh
-``` 
+```
+
 ## Results
+
+These plots are from a single GPU training run. Each one measures something most models are never asked to prove.
+
+---
+
+### Evaluation Quality Over Training
+
+![Evaluation quality over training](images/plot1_eval_quality.png)
+
+Most models get evaluated on one thing: did the final answer match. This environment evaluates four things at once — final correctness, overall solution quality, per-step validity, and how far the reasoning held before it broke. All four trend upward together. That does not happen by accident. It happens because the reward was designed to refuse partial credit: a correct answer built on broken reasoning is penalised, not rewarded.
+
+---
+
+### Training Journey
+
+![Training journey across all 30 iterations](images/plot2_training_journey.png)
+
+The two background colours mark two different modes of learning. The first phase is grounded practice on real problems with known answers. The second phase introduces model-generated problems — but only after the model demonstrated it could hold its own on verified material. The transition was not scheduled. It was conditional. The model had to earn the right to train on problems it wrote itself. That distinction separates a principled curriculum from a training loop that just gets harder on a timer.
+
+---
+
+### Self-Play Curriculum
+
+![Self-play curriculum ramp and question quality](images/plot3_selfplay_success.png)
+
+By the end of training, the majority of the practice material came from the model itself. What makes this worth showing is not the quantity — it is the quality. The problems the model generated were consistently solvable and consistently novel. The model was not recycling what it had seen. It was constructing new problems, attempting them, and learning from the attempt. A model that can teach itself is fundamentally different from one that needs to be taught.
+
+---
+
+### Reward Confidence
+
+![Reward confidence and skipped groups](images/plot4_reward_confidence.png)
+
+The band in this chart shows the spread between the model's best and worst attempts on each problem. A wide spread is actually useful — it means there is something to learn from comparing strong and weak solutions. A narrow spread that appears briefly means the model has converged hard on that problem class: it knows what to do. Two such moments of near-total confidence appear during the run. They are not the end goal, but they are evidence that the reward signal is teaching something real. The bar chart below it shows the proportion of problems where the model's attempts were so similar that no useful comparison could be made — those groups are skipped. That rate falls as the curriculum introduces harder material, which is exactly the intended behaviour.
+
+---
+
+### Step-Level Reasoning Quality
+
+![Step accuracy and LCCP across training](images/plot5_reasoning_quality.png)
+
+This is the plot that justifies the entire environment design. Step accuracy asks whether each line of reasoning in a solution is valid. Chain integrity asks whether the valid steps form an unbroken sequence from the first line to the answer. A model that gets individual steps right but loses the thread partway through is not reasoning — it is pattern-matching. Both signals improve together across held-out evaluation, which means the model is not just producing better-looking outputs. It is building solutions that hold together from start to finish.
+
+---
 
 ## Why It Matters
 
