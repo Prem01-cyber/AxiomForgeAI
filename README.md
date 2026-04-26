@@ -89,69 +89,43 @@ bash scripts/launch_grpo.sh
 
 ## Results
 
-These plots are from a single GPU training run. Each one measures something most models are never asked to prove.
-
----
+These plots come from a single GPU training run and focus on the core question: did the model get better at making its reasoning and final answer agree?
 
 ### Evaluation Quality Over Training
 
 ![Evaluation quality over training](images/plot1_eval_quality.png)
 
-Most models get evaluated on one thing: did the final answer match. This environment evaluates four things at once — final correctness, overall solution quality, per-step validity, and how far the reasoning held before it broke. All four trend upward together. That does not happen by accident. It happens because the reward was designed to refuse partial credit: a correct answer built on broken reasoning is penalised, not rewarded.
-
----
+The environment tracks final correctness, solution quality, step validity, and how long the reasoning chain stays correct. All four move upward together, which is the signal we care about: better answers are coming with better reasoning.
 
 ### Training Journey
 
 ![Training journey across all 30 iterations](images/plot2_training_journey.png)
 
-The two background colours mark two different modes of learning. The first phase is grounded practice on real problems with known answers. The second phase introduces model-generated problems — but only after the model demonstrated it could hold its own on verified material. The transition was not scheduled. It was conditional. The model had to earn the right to train on problems it wrote itself. That distinction separates a principled curriculum from a training loop that just gets harder on a timer.
-
----
+Training starts with grounded practice on problems with known answers. Self-play is introduced only after the grounded signal is stable, so the model does not train on its own generated problems too early.
 
 ### Self-Play Curriculum
 
 ![Self-play curriculum ramp and question quality](images/plot3_selfplay_success.png)
 
-By the end of training, the majority of the practice material came from the model itself. What makes this worth showing is not the quantity — it is the quality. The problems the model generated were consistently solvable and consistently novel. The model was not recycling what it had seen. It was constructing new problems, attempting them, and learning from the attempt. A model that can teach itself is fundamentally different from one that needs to be taught.
-
----
+By the end of training, most practice came from self-play. The important part is that generated problems remained solvable and novel, so self-play added useful practice instead of noise.
 
 ### Reward Confidence
 
 ![Reward confidence and skipped groups](images/plot4_reward_confidence.png)
 
-The band in this chart shows the spread between the model's best and worst attempts on each problem. A wide spread is actually useful — it means there is something to learn from comparing strong and weak solutions. A narrow spread that appears briefly means the model has converged hard on that problem class: it knows what to do. Two such moments of near-total confidence appear during the run. They are not the end goal, but they are evidence that the reward signal is teaching something real. The bar chart below it shows the proportion of problems where the model's attempts were so similar that no useful comparison could be made — those groups are skipped. That rate falls as the curriculum introduces harder material, which is exactly the intended behaviour.
-
----
+The reward spread shows how much contrast exists between the model's best and worst attempts. Wide spread gives GRPO something to learn from. Skipped groups fall as harder material enters the curriculum, which suggests the comparison signal stays useful.
 
 ### Step-Level Reasoning Quality
 
 ![Step accuracy and LCCP across training](images/plot5_reasoning_quality.png)
 
-This is the plot that justifies the entire environment design. Step accuracy asks whether each line of reasoning in a solution is valid. Chain integrity asks whether the valid steps form an unbroken sequence from the first line to the answer. A model that gets individual steps right but loses the thread partway through is not reasoning — it is pattern-matching. Both signals improve together across held-out evaluation, which means the model is not just producing better-looking outputs. It is building solutions that hold together from start to finish.
-
----
+Step accuracy checks whether each line of reasoning is valid. Chain integrity checks whether those valid steps form a path to the answer. Both improve together, which means the model is building solutions that hold together more often.
 
 ## Why It Matters
 
 Reliable math reasoning needs more than fluent explanations or lucky final answers. A system that can separate correct reasoning from unsupported answers gives the model a better training target: not just "get the number," but build a chain of logic that reaches the number.
 
 AxiomForgeAI matters because it turns that target into an environment. The same pattern can extend beyond math to other verifiable domains where attempts can be checked, compared, and improved: code, logic, structured data transformations, and scientific problem solving.
-
-## Quick Start
-
-AxiomForgeAI is built on the OpenEnv standard and exposes a Gym-style `reset` / `step` interface.
-
-```bash
-docker build -t AxiomForgeAI-env:latest -f server/Dockerfile .
-```
-
-```bash
-openenv push --namespace your-hf-username
-```
-
-The deployed Space provides a `/ws` WebSocket endpoint for RL training loops.
 
 ---
 *Engineered for the OpenEnv Hackathon India 2026*
