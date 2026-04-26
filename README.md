@@ -95,31 +95,31 @@ These plots come from a single GPU training run and focus on the core question: 
 
 ![Evaluation quality over training](images/plot1_eval_quality.png)
 
-The environment tracks final correctness, solution quality, step validity, and how long the reasoning chain stays correct. All four move upward together, which is the signal we care about: better answers are coming with better reasoning.
+The environment tracks final correctness, solution quality, step validity, and how long the reasoning chain stays correct. All four move upward together, which suggests the model is not just finding better final answers. It is also producing reasoning that holds up longer.
 
 ### Training Journey
 
 ![Training journey across all 30 iterations](images/plot2_training_journey.png)
 
-Training starts with grounded practice on problems with known answers. Self-play is introduced only after the grounded signal is stable, so the model does not train on its own generated problems too early.
+Training starts with grounded practice on problems with known answers. Self-play is introduced only after the grounded signal is stable, so the model does not train on its own generated problems too early. The transition is conditional, not just a timer.
 
 ### Self-Play Curriculum
 
 ![Self-play curriculum ramp and question quality](images/plot3_selfplay_success.png)
 
-By the end of training, most practice came from self-play. The important part is that generated problems remained solvable and novel, so self-play added useful practice instead of noise.
+By the end of training, most practice came from self-play. The important part is that generated problems stayed solvable and novel, so self-play added useful practice instead of recycled noise.
 
 ### Reward Confidence
 
 ![Reward confidence and skipped groups](images/plot4_reward_confidence.png)
 
-The reward spread shows how much contrast exists between the model's best and worst attempts. Wide spread gives GRPO something to learn from. Skipped groups fall as harder material enters the curriculum, which suggests the comparison signal stays useful.
+The reward spread shows how much contrast exists between the model's best and worst attempts. Wide spread gives GRPO something to learn from. Skipped groups are cases where attempts are too similar to compare usefully. That rate falls as harder material enters the curriculum, which suggests the comparison signal stays useful.
 
 ### Step-Level Reasoning Quality
 
 ![Step accuracy and LCCP across training](images/plot5_reasoning_quality.png)
 
-Step accuracy checks whether each line of reasoning is valid. Chain integrity checks whether those valid steps form a path to the answer. Both improve together, which means the model is building solutions that hold together more often.
+Step accuracy checks whether each line of reasoning is valid. Chain integrity checks whether those valid steps form an unbroken path to the answer. Both improve together, which means the model is building solutions that hold together more often instead of only producing better-looking outputs.
 
 ## Why It Matters
 
