@@ -1,18 +1,27 @@
 @startuml training_phases
+!theme plain
 left to right direction
-skinparam handwritten false
-skinparam monochrome true
-skinparam shadowing false
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam RectangleBorderColor #64748B
+skinparam RectangleFontColor #0F172A
+skinparam roundcorner 10
 skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam nodesep 42
+skinparam ranksep 42
 
-rectangle "Grounded warmup" as Warmup
-rectangle "Self-play ramp" as Ramp
-rectangle "Continuous improvement" as Improve
-rectangle "Safety fallback\nif quality drops" as Fallback
+title AxiomForgeAI - Training Phases
+
+rectangle "Phase 1\nGrounded Only" as Warmup #ECFDF5
+rectangle "Phase 2\nSelf-Play Ramp" as Ramp #EEF2FF
+rectangle "Phase 3\nMixed Training" as Improve #F1F5F9
+rectangle "Fallback\nGrounded Recovery" as Fallback #EDE9FE
 
 Warmup --> Ramp
 Ramp --> Improve
-Ramp --> Fallback
-Fallback --> Warmup
-Improve --> Ramp
+Improve --> Fallback : if quality drops
+Fallback --> Improve : recover
 @enduml

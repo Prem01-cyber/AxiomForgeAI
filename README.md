@@ -72,37 +72,11 @@ both -> one combined score per attempt -> GRPO compares attempts within the grou
 
 ## Training Phases
 
-The system is designed to start from stable feedback before asking the model to rely heavily on its own generated tasks. Grounded warmup gives the policy a reliable base signal, self-play ramps in curriculum-generated questions, and quality checks can push training back toward grounded data if generated questions become unclear or unsolvable.
+Training follows a simple three-phase schedule. It starts with grounded-only practice so the model learns to keep answers and reasoning stable on problems with known solutions. Self-play is then introduced gradually, while grounded questions remain as an anchor. Once both are stable, training continues with a mixed task source and falls back to grounded-only batches if answer quality drops.
 
-Diagram source: [`docs/training-phases.puml`](docs/training-phases.puml)
+![Training phases overview](images/training_phases.svg)
 
 ## Results
-
-This repository includes the training and demo paths for reporting results, but no completed `metrics.jsonl`, plots, or before/after demo output are currently committed. To avoid unsupported claims, this README does not report accuracy or reward improvements yet.
-
-The GRPO trainer writes run logs and metrics for reward, grounded accuracy, curriculum behavior, and evaluation checkpoints. The demo script can read a trained checkpoint plus `metrics.jsonl` and produce a judge-friendly before/after comparison with example solutions.
-
-```bash
-python scripts/run_grpo_training.py \
-  --base-model checkpoints/dual_task_v1 \
-  --gsm8k-data data/sft/gsm8k_test.jsonl \
-  --num-iterations 3 \
-  --group-size 4 \
-  --questions-per-iter 8 \
-  --no-prm \
-  --skip-initial-eval \
-  --run-name smoke_grpo
-```
-
-```bash
-python scripts/demo_before_after.py \
-  --baseline-model checkpoints/dual_task_v1 \
-  --trained-model checkpoints/grpo/<run>/best_policy \
-  --metrics-jsonl checkpoints/grpo/<run>/metrics.jsonl \
-  --problems data/sft/gsm8k_test.jsonl \
-  --max-samples 100 \
-  --records-out results/demo.json
-```
 
 ## Why It Matters
 
