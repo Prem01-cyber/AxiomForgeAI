@@ -1078,11 +1078,9 @@ class CurriculumMathEnvironment:
             return []
 
         # Defensive .eval() on both policy and value before any generation.
-        # PPOTrainer.train_step restores eval mode at its tail, but on the
-        # very first iteration rollouts run right after model load (HF
-        # default is .train()).  Qwen2.5 has zero dropout so this is
-        # currently cosmetic, but cheap insurance against any future
-        # model swap that has real stochastic layers.
+        # The first iteration runs rollouts right after model load (HF default
+        # is .train()).  Qwen2.5 has zero dropout so this is currently cosmetic,
+        # but cheap insurance against any future model swap with stochastic layers.
         if self.policy is not None:
             self.policy.eval()
         if self.value is not None:
