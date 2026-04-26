@@ -9,6 +9,7 @@ skinparam packageStyle rectangle
 rectangle "Grounded reward" {
   rectangle "Gold answer check" as GoldCheck
   rectangle "PRM step score" as GroundedPRM
+  rectangle "Step-answer alignment" as GroundedAlignment
   rectangle "Symbolic arithmetic" as GroundedSympy
   rectangle "Formatting" as GroundedFormat
 }
@@ -16,6 +17,7 @@ rectangle "Grounded reward" {
 rectangle "Self-play reward" {
   rectangle "Question quality" as QuestionQuality
   rectangle "PRM step score" as SelfPlayPRM
+  rectangle "Step-answer alignment" as SelfPlayAlignment
   rectangle "Symbolic arithmetic" as SelfPlaySympy
   rectangle "Formatting" as SelfPlayFormat
 }
@@ -24,10 +26,11 @@ rectangle "Combined score" as CombinedScore
 
 GoldCheck --> CombinedScore
 GroundedPRM --> CombinedScore
+GroundedAlignment --> CombinedScore
 GroundedSympy --> CombinedScore
 GroundedFormat --> CombinedScore
 QuestionQuality --> CombinedScore
 SelfPlayPRM --> CombinedScore
+SelfPlayAlignment --> CombinedScore
 SelfPlaySympy --> CombinedScore
 SelfPlayFormat --> CombinedScore
-@enduml

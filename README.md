@@ -15,15 +15,15 @@ tags:
 
 [![OpenEnv](https://img.shields.io/badge/Powered%20by-OpenEnv-blue)](https://github.com/meta-pytorch/OpenEnv)
 
-*It doesn't just solve problems. It writes them, answers them, and gets every reasoning step graded — not the answer, the thinking. Then it does it again, harder, until the chain of logic holds.*
+*A self-improving math environment where a model practices on verified problems, generates new challenges when ready, and learns from solution attempts whose reasoning steps and final answers agree.*
 
 ## The Problem
 
-Self-improvement is the real capability gap. A math model can write a fluent solution that looks correct, but when the reasoning is wrong, normal inference gives it no way to turn that mistake into practice.
+Math reasoning models can fail in two different ways. Sometimes the setup, arithmetic, and algebraic steps look reasonable, but the final answer is wrong. Sometimes the final answer is right, but the reasoning that produced it is incomplete, inconsistent, or hard to trust.
 
-That matters most in math reasoning, where one small arithmetic or logic error can break the final answer. The challenge is not just getting one problem right. It is building a loop where the model can generate attempts, verify its steps, learn which reasoning paths worked, and move toward harder problems over time.
+For a math user, both failures matter. Checking only the final answer misses where the solution went off track. Checking only the steps misses whether the work actually reaches the right result. The useful signal is the agreement between the reasoning path and the final answer.
 
-AxiomForgeAI builds that loop for a 1.5B parameter math model. It turns reasoning into a training environment where the model practices grounded problems, creates its own challenges, receives verifiable feedback, and improves from the best reasoning paths it discovers.
+This project builds a practice loop around that signal. The model first works on problems with known answers, gets feedback on both the chain of reasoning and the final result, and only then starts generating new challenges for itself. The constraint is intentionally small: a 1.5B math model.
 
 ## The Environment
 
@@ -31,15 +31,15 @@ The agent trains on two kinds of tasks: grounded math problems with known answer
 
 In the grounded lane, the environment samples a dataset problem from sources such as GSM8K or MATH and keeps the gold final answer available for verification. In the self-play lane, the curriculum selects a target skill and difficulty, then the model generates a new question before attempting to solve it.
 
-Both lanes then follow the same learning shape: sample multiple solution attempts, grade them with independent signals, compare attempts inside the group, and update the policy with GRPO. The curriculum keeps the model near problems that are neither too easy nor too hard.
+Both lanes then follow the same learning shape: sample multiple solution attempts, grade them with independent signals, compare attempts inside the group, and update the policy with GRPO. Training starts grounded-only, gradually adds self-play groups by ratio, and falls back to grounded signal when generated-question quality or answer correctness drops.
 
 Diagram source: [`docs/environment-overview.puml`](docs/environment-overview.puml)
 
 ## How Self-Improvement Works
 
-AxiomForgeAI treats reasoning as practice, not a one-shot answer. The model sees a problem, generates several candidate solutions, and receives feedback from graders that do not rely on the same sampled answer being correct by chance.
+AxiomForgeAI treats reasoning as practice, not a one-shot answer. Each problem produces a group of candidate solutions. The reward separates answer correctness, step quality, chain consistency, and parseable final-answer format.
 
-GRPO then compares attempts within the same problem group. Stronger reasoning paths receive positive relative signal, weaker paths receive less, and groups with no useful reward difference can be skipped. Over time, the curriculum adapts the next problems so training stays in the useful middle: challenging enough to create learning signal, but not so hard that every attempt fails.
+GRPO compares attempts within the same problem group. Stronger attempts receive positive relative signal, weaker attempts receive less, and groups with no useful reward difference can be skipped. Wrong final answers can still provide limited learning signal when the reasoning chain is partially correct, but correct and consistent solutions remain the target.
 
 The loop is intentionally simple:
 

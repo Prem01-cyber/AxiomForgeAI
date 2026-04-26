@@ -1,36 +1,69 @@
 @startuml environment_overview
-left to right direction
-skinparam handwritten false
-skinparam monochrome true
-skinparam shadowing false
+!theme plain
+top to bottom direction
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam RectangleBorderColor #64748B
+skinparam RectangleFontColor #0F172A
+skinparam roundcorner 10
 skinparam linetype ortho
 skinparam packageStyle rectangle
+skinparam nodesep 42
+skinparam ranksep 42
 
-rectangle "Grounded Lane" {
-  rectangle "Dataset problem" as DatasetProblem
-  rectangle "Gold answer" as GoldAnswer
-  rectangle "K solutions" as GroundedSolutions
-  DatasetProblem --> GoldAnswer
-  GoldAnswer --> GroundedSolutions
+title AxiomForgeAI - Phase-Controlled Math Reasoning Loop
+
+rectangle "Small Math Model\n1.5B parameters" as MODEL #DBEAFE
+
+rectangle "Phase Controller\nwarmup: grounded only\nramp: gradual self-play\ncontinuous: capped mix + fallback" as PHASE #E2E8F0
+
+rectangle "Task Source\nfor each GRPO group" as SELECT #E2E8F0
+
+rectangle "Grounded Source\nKnown-answer practice" as GLANE #ECFDF5 {
+    rectangle "Dataset problem\nGSM8K / MATH" as GQ #CCFBF1
+    rectangle "Gold answer\navailable" as GOLD #CCFBF1
+    rectangle "Model samples\nK solutions" as GSOL #CCFBF1
 }
 
-rectangle "Self-Play Lane" {
-  rectangle "Curriculum" as Curriculum
-  rectangle "Model-generated question" as GeneratedQuestion
-  rectangle "K solutions" as SelfPlaySolutions
-  Curriculum --> GeneratedQuestion
-  GeneratedQuestion --> SelfPlaySolutions
+rectangle "Self-Play Source\nModel-made challenges" as SLANE #EEF2FF {
+    rectangle "Curriculum picks\nskill + difficulty" as CURRIC #E0E7FF
+    rectangle "Model writes\na new question" as SQ #E0E7FF
+    rectangle "Model samples\nK solutions" as SSOL #E0E7FF
 }
 
-rectangle "Shared grading" as SharedGrading
-rectangle "Group comparison" as GroupComparison
-rectangle "GRPO update" as GRPO
-rectangle "Improved model" as ImprovedModel
+rectangle "Shared Grading\nanswer, steps, arithmetic, format\n+ question quality for self-play" as GRADERS #F1F5F9
 
-GroundedSolutions --> SharedGrading
-SelfPlaySolutions --> SharedGrading
-SharedGrading --> GroupComparison
-GroupComparison --> GRPO
-GRPO --> ImprovedModel
-ImprovedModel --> Curriculum
+rectangle "Group Comparison\nWhich attempts worked best?" as COMPARE #EDE9FE
+rectangle "GRPO Update\nReinforce stronger reasoning" as GRPO #DDD6FE
+rectangle "Improved Model\nfor the next round" as NEXT #DBEAFE
+
+MODEL -down-> PHASE
+PHASE -down-> SELECT
+
+note right of PHASE
+  sets mix
+end note
+
+SELECT -left-> GQ : grounded slot
+GQ --> GOLD
+GOLD --> GSOL
+
+SELECT -right-> CURRIC : self-play slot
+CURRIC --> SQ
+SQ --> SSOL
+
+GSOL -down-> GRADERS
+SSOL -down-> GRADERS
+GRADERS -right-> COMPARE
+COMPARE -right-> GRPO
+GRPO -right-> NEXT
+NEXT -up-> MODEL : repeat
+
+note bottom of SELECT
+  Each batch is randomly interleaved.
+  Phase 1 uses grounded only.
+  Later phases add self-play slots by ratio.
+end note
 @enduml
