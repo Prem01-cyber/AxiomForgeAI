@@ -27,13 +27,18 @@ This project builds a practice loop around that signal. The model first works on
 
 ## The Environment
 
-The agent trains on two kinds of tasks: grounded math problems with known answers, and self-generated challenges from a curriculum.
+The environment is a practice loop for math reasoning. Each training group starts with one problem, asks the model for multiple solution attempts, scores those attempts from several angles, and uses GRPO to reinforce the attempts that are stronger than the rest of the group.
 
-In the grounded lane, the environment samples a dataset problem from sources such as GSM8K or MATH and keeps the gold final answer available for verification. In the self-play lane, the curriculum selects a target skill and difficulty, then the model generates a new question before attempting to solve it.
+![AxiomForgeAI environment overview](docs/environment_overview.png)
 
-Both lanes then follow the same learning shape: sample multiple solution attempts, grade them with independent signals, compare attempts inside the group, and update the policy with GRPO. Training starts grounded-only, gradually adds self-play groups by ratio, and falls back to grounded signal when generated-question quality or answer correctness drops.
+The environment has two task sources:
 
-Diagram source: [`docs/environment-overview.puml`](docs/environment-overview.puml)
+- **Grounded source:** A dataset problem from GSM8K / MATH comes with a known final answer. This gives the environment a reliable anchor for checking whether the model actually reached the right result.
+- **Self-play source:** The curriculum selects a target skill and difficulty. The model writes a new question, then samples multiple solutions to that question. This adds practice beyond static datasets, but only after the grounded signal is stable enough.
+
+Both sources feed the same scoring and update loop. For every selected problem, the model samples `K` candidate solutions. The environment checks final-answer correctness when a gold answer exists, scores reasoning quality with a PRM, verifies arithmetic where possible, checks answer formatting, and scores self-generated questions for clarity, novelty, difficulty fit, and solvability.
+
+GRPO then compares the `K` attempts against each other. The model is not rewarded for a solution in isolation; the strongest attempt in the group becomes the direction for learning. Training starts grounded-only, gradually mixes in self-play groups, and falls back to grounded practice if generated-question quality or answer correctness drops.
 
 ## How Self-Improvement Works
 
