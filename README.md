@@ -76,6 +76,13 @@ Training follows a simple three-phase schedule. It starts with grounded-only pra
 
 ![Training phases overview](images/training_phases.svg)
 
+## Training Script
+
+The GRPO training loop is available in two forms:
+
+- [`scripts/run_grpo_training.py`](scripts/run_grpo_training.py): the main Hugging Face / PyTorch training entry point, with custom GRPO loss, grouped solution sampling, grounded and self-play rewards, checkpointing, and metrics logging.
+- [`train_grpo.ipynb`](train_grpo.ipynb): a notebook version for inspecting or rerunning the training flow interactively.
+
 ## Results
 
 ## Why It Matters
