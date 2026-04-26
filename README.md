@@ -107,7 +107,7 @@ Training starts with grounded practice on problems with known answers. Self-play
 
 ![Self-play curriculum ramp and question quality](images/plot3_selfplay_success.png)
 
-By the end of training, most practice came from self-play. The important part is that generated problems stayed solvable and novel, so self-play added useful practice instead of recycled noise.
+By the end of training, most practice came from self-play. The important part is that generated problems stayed solvable and novel even after self-play became a larger share of training. That makes the ramp meaningful: self-play added useful practice instead of recycled noise.
 
 ### Reward Confidence
 
