@@ -54,7 +54,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-BASE_MODEL_ID = "Qwen/Qwen2.5-Math-1.5B-Instruct"
+BASE_MODEL_ID = "Qwen/Qwen2.5-1.5B-Instruct"
 REPORTS_DIR   = Path("reports")
 
 

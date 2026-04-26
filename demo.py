@@ -249,7 +249,7 @@ def create_app(default_run: Optional[str] = None) -> gr.Blocks:
         # ── Side-by-side model outputs ─────────────────────────────────────
         with gr.Row():
             with gr.Column():
-                gr.HTML("<div class='model-label'>🟦 Base Model — Qwen2.5-Math-1.5B-Instruct</div>")
+                gr.HTML("<div class='model-label'>🟦 Base Model — Qwen2.5-1.5B-Instruct (general)</div>")
                 base_answer_md  = gr.Markdown(value="", label="Answer")
                 base_solution   = gr.Markdown(value="", label="Solution", height=420)
                 base_meta       = gr.Markdown(value="", label="Metadata")
@@ -421,7 +421,7 @@ def create_app(default_run: Optional[str] = None) -> gr.Blocks:
         # ── Footer ─────────────────────────────────────────────────────────
         gr.HTML("""
         <div style="text-align:center; padding: 20px 0 8px 0; color:#475569; font-size:0.85rem;">
-          AxiomForgeAI &nbsp;·&nbsp; GRPO-trained Qwen2.5-Math-1.5B
+          AxiomForgeAI &nbsp;·&nbsp; Base: Qwen2.5-1.5B-Instruct &nbsp;·&nbsp; RL: GRPO fine-tuned
           &nbsp;·&nbsp; Step-level PRM scoring &nbsp;·&nbsp; Adaptive curriculum
         </div>
         """)

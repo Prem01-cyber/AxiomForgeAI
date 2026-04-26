@@ -68,4 +68,8 @@ ENV/
 .DS_Store
 Thumbs.db
 
+<<<<<<< HEAD
 */ui
+=======
+
+>>>>>>> c97514a (Update model references in demo.py and run_inference.py for clarity; add additional entries to .gitignore.)
