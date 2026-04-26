@@ -52,6 +52,7 @@ from openenv.core.env_server.types import State
 
 try:
     from ..models import AxiomforgeaiAction, AxiomforgeaiObservation
+
 except ImportError:
     from models import AxiomforgeaiAction, AxiomforgeaiObservation
 
@@ -197,30 +198,41 @@ class AxiomforgeaiEnvironment(Environment):
     # OpenEnv interface
     # ------------------------------------------------------------------
 
-    def reset(self) -> AxiomforgeaiObservation:
+    def reset(
+        self,
+        qa: Optional[Dict[str, str]] = None,
+    ) -> AxiomforgeaiObservation:
         """
-        Reset the environment and sample a new math question.
+        Reset the environment and begin a new episode.
 
-        When a dataset is configured (AXIOMFORGE_DATA_PATH), a grounded QA
-        pair is drawn so that step() can verify the answer against a gold
-        label.  Without a dataset, the curriculum generates an instruction-
-        style prompt.
+        Args:
+            qa: Optional ``{"question": str, "gold_final": str}`` dict.
+                When supplied the environment is seeded with this specific
+                question and gold answer — used by the training loop for
+                difficulty-sampled grounded episodes.  When omitted the
+                environment draws from its internal grounded QA pool (if
+                configured) or falls back to the curriculum instruction.
 
         Returns:
             AxiomforgeaiObservation with the question populated; reward=0.0.
         """
         self._state = State(episode_id=str(uuid4()), step_count=0)
 
-        if self._math_env is not None:
+        if qa is not None:
+            # Caller-supplied episode — honour it exactly.
+            self._current_question = qa.get("question", "").strip()
+            self._gold_final = qa.get("gold_final", "").strip()
+            self._current_topic = qa.get("topic", "grounded")
+            self._current_difficulty = float(qa.get("difficulty", 0.5))
+        elif self._math_env is not None:
             try:
                 instruction, topic, difficulty = self._math_env.sample_instruction()
                 self._current_topic = topic
                 self._current_difficulty = float(difficulty)
-
                 if self._math_env.grounded_qa_pairs:
-                    qa = random.choice(self._math_env.grounded_qa_pairs)
-                    self._current_question = qa["question"]
-                    self._gold_final = qa["gold_final"]
+                    _qa = random.choice(self._math_env.grounded_qa_pairs)
+                    self._current_question = _qa["question"]
+                    self._gold_final = _qa["gold_final"]
                 else:
                     self._current_question = instruction
                     self._gold_final = ""
@@ -319,6 +331,27 @@ class AxiomforgeaiEnvironment(Environment):
         reward = 1.0 if pred and pred == self._gold_final else 0.0
         feedback = f"pred={pred!r} gold={self._gold_final!r}"
         return reward, feedback, {"pred_final": pred, "gold_final": self._gold_final}
+
+    def close(self) -> None:
+        """
+        Persist curriculum state and release resources.
+
+        Call once at the end of a training run so the CurriculumManager's
+        per-topic statistics are saved to disk and can be resumed on the
+        next run.  Safe to call multiple times.
+        """
+        if self._math_env is not None:
+            try:
+                self._math_env.curriculum_manager.save_state(
+                    iteration=self._math_env.curriculum_manager.current_iteration,
+                    rollout=None,
+                )
+                logger.info(
+                    "Curriculum state saved (iteration %d).",
+                    self._math_env.curriculum_manager.current_iteration,
+                )
+            except Exception as exc:
+                logger.warning("close(): curriculum save failed — %s", exc)
 
     @property
     def state(self) -> State:
