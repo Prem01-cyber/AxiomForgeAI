@@ -52,15 +52,23 @@ practice -> sample attempts -> verify steps and answer -> compare -> reinforce -
 
 ## Reward System
 
-The reward is built from separate checks so the model is not trained on a single fragile signal.
+The reward is designed to avoid a common math-training failure: optimizing for either the final answer or the reasoning trace alone. A good solution should reach the right answer, explain the path clearly, and keep the final result consistent with the steps that produced it.
 
-- **Answer check:** when a gold answer exists, the final numeric answer is compared against the expected result.
-- **Process reward:** a PRM scores the quality of intermediate reasoning steps.
-- **Symbolic verification:** arithmetic and parseable expressions are normalized and checked with SymPy where possible.
-- **Formatting:** solutions are rewarded for producing clear, parseable final answers.
-- **Question quality:** self-generated problems are scored for topic fit, clarity, target difficulty, novelty, and solvability.
+| Signal | What it checks | Why it matters |
+| --- | --- | --- |
+| Final answer | Matches the gold answer when one exists | Keeps grounded problems tied to objective correctness |
+| Process score | PRM score over the reasoning steps | Rewards clear mathematical progress, not just the last line |
+| Chain consistency | Correct-prefix and step-answer consistency signals | Gives partial learning signal when a solution goes wrong midway |
+| Format | Parseable final answer and clean response structure | Makes automatic grading reliable |
+| Question quality | Topic fit, difficulty fit, clarity, novelty, and solvability | Keeps self-play from generating vague or useless practice tasks |
 
-Diagram source: [`docs/reward-system.puml`](docs/reward-system.puml)
+Grounded problems use the gold answer as the anchor. Self-play problems add a question-quality score before the solution reward is trusted. Both paths produce one combined score for each sampled attempt, and GRPO uses those scores only in comparison with the other attempts from the same problem.
+
+```text
+grounded: answer correctness + process score + chain consistency + format
+self-play: question quality + solution quality
+both -> one combined score per attempt -> GRPO compares attempts within the group
+```
 
 ## Training Phases
 

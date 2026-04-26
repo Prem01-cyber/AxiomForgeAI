@@ -1,36 +1,51 @@
 @startuml reward_system
-left to right direction
-skinparam handwritten false
-skinparam monochrome true
-skinparam shadowing false
+!theme plain
+top to bottom direction
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+skinparam ArrowColor #334155
+skinparam RectangleBorderColor #64748B
+skinparam RectangleFontColor #0F172A
+skinparam roundcorner 10
 skinparam linetype ortho
 skinparam packageStyle rectangle
+skinparam nodesep 54
+skinparam ranksep 60
 
-rectangle "Grounded reward" {
-  rectangle "Gold answer check" as GoldCheck
-  rectangle "PRM step score" as GroundedPRM
-  rectangle "Step-answer alignment" as GroundedAlignment
-  rectangle "Symbolic arithmetic" as GroundedSympy
-  rectangle "Formatting" as GroundedFormat
+title AxiomForgeAI - Reward System
+
+rectangle "Sampled Solution Attempt" as ATTEMPT #DBEAFE
+
+rectangle "Grounded Reward\nknown-answer problem" as GROUNDED #ECFDF5 {
+    rectangle "Final answer\nmatches gold" as GOLD #CCFBF1
+    rectangle "PRM process score\nreasoning quality" as GPRM #CCFBF1
+    rectangle "Chain consistency\ncorrect prefix + final check" as GCHAIN #CCFBF1
+    rectangle "Format score\nparseable final answer" as GFORMAT #CCFBF1
 }
 
-rectangle "Self-play reward" {
-  rectangle "Question quality" as QuestionQuality
-  rectangle "PRM step score" as SelfPlayPRM
-  rectangle "Step-answer alignment" as SelfPlayAlignment
-  rectangle "Symbolic arithmetic" as SelfPlaySympy
-  rectangle "Formatting" as SelfPlayFormat
+rectangle "Self-Play Reward\ngenerated challenge" as SELFPLAY #EEF2FF {
+    rectangle "Question quality\nclarity, novelty, solvability" as QUALITY #E0E7FF
+    rectangle "Solution quality\nPRM + chain checks" as SOLUTION #E0E7FF
+    rectangle "Format score\nparseable final answer" as SFORMAT #E0E7FF
 }
 
-rectangle "Combined score" as CombinedScore
+rectangle "Combined Reward\none score per attempt" as SCORE #F1F5F9
+rectangle "GRPO Group Comparison\nrank attempts within the same problem" as COMPARE #EDE9FE
+rectangle "Step-Answer Alignment\nreward paths where reasoning supports the result" as ALIGN #DDD6FE
 
-GoldCheck --> CombinedScore
-GroundedPRM --> CombinedScore
-GroundedAlignment --> CombinedScore
-GroundedSympy --> CombinedScore
-GroundedFormat --> CombinedScore
-QuestionQuality --> CombinedScore
-SelfPlayPRM --> CombinedScore
-SelfPlayAlignment --> CombinedScore
-SelfPlaySympy --> CombinedScore
-SelfPlayFormat --> CombinedScore
+ATTEMPT -left-> GROUNDED : grounded
+ATTEMPT -right-> SELFPLAY : self-play
+
+GOLD --> GPRM
+GPRM --> GCHAIN
+GCHAIN --> GFORMAT
+
+QUALITY --> SOLUTION
+SOLUTION --> SFORMAT
+
+GFORMAT -down-> SCORE
+SFORMAT -down-> SCORE
+SCORE -right-> COMPARE
+COMPARE -right-> ALIGN
+@enduml
