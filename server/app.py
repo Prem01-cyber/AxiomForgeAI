@@ -38,7 +38,7 @@ except Exception as e:  # pragma: no cover
 try:
     from ..models import AxiomforgeaiAction, AxiomforgeaiObservation
     from .AxiomForgeAI_environment import AxiomforgeaiEnvironment
-except ModuleNotFoundError:
+except ImportError:
     from models import AxiomforgeaiAction, AxiomforgeaiObservation
     from server.AxiomForgeAI_environment import AxiomforgeaiEnvironment
 

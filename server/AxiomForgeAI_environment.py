@@ -5,14 +5,48 @@
 # LICENSE file in the root directory of this source tree.
 
 """
-Axiomforgeai Environment Implementation.
+AxiomForgeAI Math RL Environment.
 
-A simple test environment that echoes back messages sent to it.
-Perfect for testing HTTP server infrastructure.
+Wraps CurriculumMathEnvironment from src/rl/math_environment_curriculum.py
+to expose an OpenEnv-compatible interface (reset / step / state).
+
+Episode semantics
+-----------------
+* reset()  — Samples a new question from the adaptive curriculum (or a
+             grounded QA pair when a dataset is configured).  Returns the
+             question in the observation; reward is 0.0.
+* step(action) — Scores the agent's submitted solution with the full reward
+             pipeline (PRM + SymPy + format) and returns reward + feedback.
+             done=True always: one question per episode.
+
+Environment variables
+---------------------
+AXIOMFORGE_DATA_PATH   Path to a JSONL file with {"question", "gold_final"}
+                       records (e.g. data/sft/gsm8k_sft.jsonl).  When set,
+                       the environment uses grounded QA pairs for questions
+                       and ground-truth answer verification.
+
+AXIOMFORGE_PRM_PATH    HuggingFace model ID or local path for the Process
+                       Reward Model (default: Qwen/Qwen2.5-Math-PRM-7B).
+                       Set to "" to disable PRM scoring (uses SymPy only).
+
+AXIOMFORGE_CURRICULUM_DIR
+                       Directory where the CurriculumManager persists its
+                       state between runs.  Defaults to
+                       "checkpoints/curriculum".
 """
 
+from __future__ import annotations
+
+import json
+import logging
+import os
+import random
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
+import torch
 from openenv.core.env_server.interfaces import Environment
 from openenv.core.env_server.types import State
 
@@ -21,84 +55,272 @@ try:
 except ImportError:
     from models import AxiomforgeaiAction, AxiomforgeaiObservation
 
+# ── Heavy RL imports — fail gracefully so openenv validate passes even when
+#    the ML stack is not installed (e.g. lightweight CI / schema validation).
+try:
+    from src.rl.math_environment_curriculum import CurriculumMathEnvironment
+    from src.rl.prm_scorer import ProcessRewardScorer
+    from src.sft.solution_format import extract_final_answer_numeric_str
+
+    _RL_AVAILABLE = True
+except Exception as _rl_import_err:  # pragma: no cover
+    _RL_AVAILABLE = False
+    CurriculumMathEnvironment = None  # type: ignore[assignment,misc]
+    ProcessRewardScorer = None  # type: ignore[assignment,misc]
+    extract_final_answer_numeric_str = None  # type: ignore[assignment]
+
+
+logger = logging.getLogger(__name__)
+
+# Fallback question used during validation / when no dataset is configured.
+_VALIDATION_QUESTION = (
+    "A store sells apples for $2 each and oranges for $3 each. "
+    "If Sarah buys 4 apples and 3 oranges, how much does she spend in total?"
+)
+_VALIDATION_GOLD = "17"
+_VALIDATION_TOPIC = "basic_arithmetic"
+_VALIDATION_DIFFICULTY = 0.1
+
+
+def _load_qa_pairs(data_path: str) -> List[Dict[str, str]]:
+    """Load {"question", "gold_final"} records from a JSONL file."""
+    pairs: List[Dict[str, str]] = []
+    p = Path(data_path)
+    if not p.exists():
+        logger.warning("AXIOMFORGE_DATA_PATH not found: %s", data_path)
+        return pairs
+    with p.open(encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                rec = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            q = rec.get("question", "").strip()
+            g = rec.get("gold_final", "").strip()
+            if q and g:
+                pairs.append({"question": q, "gold_final": g})
+    logger.info("Loaded %d QA pairs from %s", len(pairs), data_path)
+    return pairs
+
 
 class AxiomforgeaiEnvironment(Environment):
     """
-    A simple echo environment that echoes back messages.
+    AxiomForgeAI math RL environment for OpenEnv.
 
-    This environment is designed for testing the HTTP server infrastructure.
-    It maintains minimal state and simply echoes back whatever message it receives.
+    Uses CurriculumMathEnvironment from src/rl/ for adaptive question
+    selection and reward computation.  When the ML stack is unavailable
+    (e.g. during schema validation), falls back to a lightweight mode
+    that uses only the installed openenv-core dependencies.
 
-    Example:
-        >>> env = AxiomforgeaiEnvironment()
-        >>> obs = env.reset()
-        >>> print(obs.echoed_message)  # "Axiomforgeai environment ready!"
-        >>>
-        >>> obs = env.step(AxiomforgeaiAction(message="Hello"))
-        >>> print(obs.echoed_message)  # "Hello"
-        >>> print(obs.message_length)  # 5
+    Supports concurrent WebSocket sessions — each client gets its own
+    instance with independent episode state.
     """
 
-    # Enable concurrent WebSocket sessions.
-    # Set to True if your environment isolates state between instances.
-    # When True, multiple WebSocket clients can connect simultaneously, each
-    # getting their own environment instance (when using factory mode in app.py).
     SUPPORTS_CONCURRENT_SESSIONS: bool = True
 
-    def __init__(self):
-        """Initialize the AxiomForgeAI environment."""
+    def __init__(self) -> None:
         self._state = State(episode_id=str(uuid4()), step_count=0)
-        self._reset_count = 0
+
+        # Per-episode state
+        self._current_question: str = ""
+        self._gold_final: str = ""
+        self._current_topic: str = ""
+        self._current_difficulty: float = 0.5
+
+        self._math_env: Optional[Any] = None  # CurriculumMathEnvironment or None
+
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+        if not _RL_AVAILABLE:
+            logger.warning(
+                "RL stack (torch/transformers/sympy) not available — "
+                "running in schema-validation mode with fixed fallback responses."
+            )
+            return
+
+        # ── Load grounded QA pairs (optional) ─────────────────────────────
+        grounded_qa_pairs: List[Dict[str, str]] = []
+        data_path = os.environ.get("AXIOMFORGE_DATA_PATH", "")
+        if data_path:
+            grounded_qa_pairs = _load_qa_pairs(data_path)
+
+        # ── Load PRM scorer (optional) ────────────────────────────────────
+        prm: Optional[Any] = None  # ProcessRewardScorer or None
+        prm_path = os.environ.get("AXIOMFORGE_PRM_PATH", "")
+        if prm_path:
+            try:
+                prm = ProcessRewardScorer(
+                    model_name=prm_path,
+                    device=device,
+                    load_in_4bit=True,
+                )
+                logger.info("PRM loaded: %s", prm_path)
+            except Exception as exc:
+                logger.warning("PRM load failed (%s) — scoring uses SymPy only.", exc)
+
+        # ── Create CurriculumMathEnvironment in scoring-only mode ─────────
+        # policy_model=None + tokenizer=None is safe when only reward-computation
+        # methods are called (compute_grounded_reward, sample_instruction).
+        # Generation methods (generate_with_logging, format_solution_prompt)
+        # are NOT called from the server step path — the agent supplies solutions.
+        curriculum_dir = os.environ.get(
+            "AXIOMFORGE_CURRICULUM_DIR", "checkpoints/curriculum"
+        )
+        try:
+            self._math_env = CurriculumMathEnvironment(
+                policy_model=None,
+                value_model=None,
+                tokenizer=None,
+                reference_questions=[qa["question"] for qa in grounded_qa_pairs],
+                grounded_qa_pairs=grounded_qa_pairs,
+                prm_scorer=prm,
+                curriculum_checkpoint_dir=curriculum_dir,
+                device=device,
+            )
+            logger.info(
+                "CurriculumMathEnvironment ready (scoring-only, %d QA pairs, PRM=%s)",
+                len(grounded_qa_pairs),
+                "yes" if prm else "no",
+            )
+        except Exception as exc:
+            logger.warning(
+                "CurriculumMathEnvironment init failed (%s) — "
+                "falling back to validation mode.",
+                exc,
+            )
+            self._math_env = None
+
+    # ------------------------------------------------------------------
+    # OpenEnv interface
+    # ------------------------------------------------------------------
 
     def reset(self) -> AxiomforgeaiObservation:
         """
-        Reset the environment.
+        Reset the environment and sample a new math question.
+
+        When a dataset is configured (AXIOMFORGE_DATA_PATH), a grounded QA
+        pair is drawn so that step() can verify the answer against a gold
+        label.  Without a dataset, the curriculum generates an instruction-
+        style prompt.
 
         Returns:
-            AxiomforgeaiObservation with a ready message
+            AxiomforgeaiObservation with the question populated; reward=0.0.
         """
         self._state = State(episode_id=str(uuid4()), step_count=0)
-        self._reset_count += 1
+
+        if self._math_env is not None:
+            try:
+                instruction, topic, difficulty = self._math_env.sample_instruction()
+                self._current_topic = topic
+                self._current_difficulty = float(difficulty)
+
+                if self._math_env.grounded_qa_pairs:
+                    qa = random.choice(self._math_env.grounded_qa_pairs)
+                    self._current_question = qa["question"]
+                    self._gold_final = qa["gold_final"]
+                else:
+                    self._current_question = instruction
+                    self._gold_final = ""
+            except Exception as exc:
+                logger.warning("sample_instruction failed, using fallback: %s", exc)
+                self._current_question = _VALIDATION_QUESTION
+                self._gold_final = _VALIDATION_GOLD
+                self._current_topic = _VALIDATION_TOPIC
+                self._current_difficulty = _VALIDATION_DIFFICULTY
+        else:
+            self._current_question = _VALIDATION_QUESTION
+            self._gold_final = _VALIDATION_GOLD
+            self._current_topic = _VALIDATION_TOPIC
+            self._current_difficulty = _VALIDATION_DIFFICULTY
 
         return AxiomforgeaiObservation(
-            echoed_message="Axiomforgeai environment ready!",
-            message_length=0,
+            question=self._current_question,
+            topic=self._current_topic,
+            difficulty=self._current_difficulty,
+            feedback="",
             done=False,
             reward=0.0,
         )
 
     def step(self, action: AxiomforgeaiAction) -> AxiomforgeaiObservation:  # type: ignore[override]
         """
-        Execute a step in the environment by echoing the message.
+        Score the agent's submitted solution.
+
+        Uses compute_grounded_reward from CurriculumMathEnvironment when
+        available (PRM + SymPy + format scoring).  Falls back to numeric
+        answer extraction when the full RL stack is not loaded.
 
         Args:
-            action: AxiomforgeaiAction containing the message to echo
+            action: AxiomforgeaiAction containing the solution text.
 
         Returns:
-            AxiomforgeaiObservation with the echoed message and its length
+            AxiomforgeaiObservation with reward, feedback, and metadata.
+            done=True — one question per episode.
         """
         self._state.step_count += 1
+        solution = action.solution
 
-        message = action.message
-        length = len(message)
+        reward: float = 0.0
+        feedback: str = ""
+        metadata: Dict[str, Any] = {}
 
-        # Simple reward: longer messages get higher rewards
-        reward = length * 0.1
+        if self._math_env is not None and self._current_question:
+            try:
+                reward_result = self._math_env.compute_grounded_reward(
+                    question=self._current_question,
+                    solution=solution,
+                    gold_final=self._gold_final,
+                )
+                reward = float(reward_result.get("combined_score", 0.0))
+                gt = reward_result.get("gt_match", False)
+                step_acc = reward_result.get("step_accuracy", 0.0)
+                lccp = reward_result.get("lccp", 0.0)
+                pred = reward_result.get("pred_final", "")
+                feedback = (
+                    f"gt_match={gt} pred={pred!r} gold={self._gold_final!r} "
+                    f"step_acc={step_acc:.2f} lccp={lccp:.2f}"
+                )
+                # Serialise reward breakdown into metadata; skip non-serialisable lists.
+                metadata = {
+                    k: v
+                    for k, v in reward_result.items()
+                    if not isinstance(v, list)
+                }
+            except Exception as exc:
+                logger.warning("compute_grounded_reward failed: %s", exc)
+                reward, feedback, metadata = self._fallback_score(solution)
+        else:
+            reward, feedback, metadata = self._fallback_score(solution)
 
         return AxiomforgeaiObservation(
-            echoed_message=message,
-            message_length=length,
-            done=False,
+            question=self._current_question,
+            topic=self._current_topic,
+            difficulty=self._current_difficulty,
+            feedback=feedback,
+            done=True,
             reward=reward,
-            metadata={"original_message": message, "step": self._state.step_count},
+            metadata=metadata,
         )
+
+    # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
+
+    def _fallback_score(
+        self, solution: str
+    ) -> tuple[float, str, Dict[str, Any]]:
+        """Lightweight scoring used when the full RL stack is unavailable."""
+        pred: str = ""
+        if extract_final_answer_numeric_str is not None:
+            pred = extract_final_answer_numeric_str(solution) or ""
+        reward = 1.0 if pred and pred == self._gold_final else 0.0
+        feedback = f"pred={pred!r} gold={self._gold_final!r}"
+        return reward, feedback, {"pred_final": pred, "gold_final": self._gold_final}
 
     @property
     def state(self) -> State:
-        """
-        Get the current environment state.
-
-        Returns:
-            Current State with episode_id and step_count
-        """
+        """Return the current episode state (episode_id + step_count)."""
         return self._state

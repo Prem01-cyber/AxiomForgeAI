@@ -41,5 +41,15 @@ server = "AxiomForgeAI.server.app:main"
 
 [tool.setuptools]
 include-package-data = true
-packages = ["AxiomForgeAI", "AxiomForgeAI.server"]
+packages = [
+    "AxiomForgeAI",
+    "AxiomForgeAI.server",
+    "src",
+    "src.config",
+    "src.rl",
+    "src.sft",
+    "src.utils",
+    "src.self_play",
+    "scripts",
+]
 package-dir = { "AxiomForgeAI" = ".", "AxiomForgeAI.server" = "server" }

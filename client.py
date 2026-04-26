@@ -4,9 +4,9 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-"""Axiomforgeai Environment Client."""
+"""AxiomForgeAI Math RL Environment Client."""
 
-from typing import Dict
+from typing import Any, Dict, Optional
 
 from openenv.core import EnvClient
 from openenv.core.client_types import StepResult
@@ -19,80 +19,57 @@ class AxiomforgeaiEnv(
     EnvClient[AxiomforgeaiAction, AxiomforgeaiObservation, State]
 ):
     """
-    Client for the Axiomforgeai Environment.
+    Client for the AxiomForgeAI math RL environment.
 
-    This client maintains a persistent WebSocket connection to the environment server,
-    enabling efficient multi-step interactions with lower latency.
-    Each client instance has its own dedicated environment session on the server.
+    Maintains a persistent WebSocket connection to the environment server.
+    Each client instance gets its own session with independent episode state.
 
-    Example:
-        >>> # Connect to a running server
-        >>> with AxiomforgeaiEnv(base_url="http://localhost:8000") as client:
-        ...     result = client.reset()
-        ...     print(result.observation.echoed_message)
-        ...
-        ...     result = client.step(AxiomforgeaiAction(message="Hello!"))
-        ...     print(result.observation.echoed_message)
+    Episode flow::
 
-    Example with Docker:
-        >>> # Automatically start container and connect
-        >>> client = AxiomforgeaiEnv.from_docker_image("AxiomForgeAI-env:latest")
-        >>> try:
-        ...     result = client.reset()
-        ...     result = client.step(AxiomforgeaiAction(message="Test"))
-        ... finally:
-        ...     client.close()
+        with AxiomforgeaiEnv(base_url="http://localhost:8000") as env:
+            # 1. Reset — receive a math question
+            result = env.reset()
+            question = result.observation.question
+
+            # 2. Step — submit a solution, receive reward + feedback
+            solution = "Step 1: ... Final Answer: 42"
+            result = env.step(AxiomforgeaiAction(solution=solution))
+            print(result.reward, result.observation.feedback)
+
+    Example with Docker::
+
+        client = AxiomforgeaiEnv.from_docker_image("axiomforgeai-env:latest")
+        try:
+            result = client.reset()
+            result = client.step(AxiomforgeaiAction(solution="Final Answer: 17"))
+        finally:
+            client.close()
     """
 
-    def _step_payload(self, action: AxiomforgeaiAction) -> Dict:
-        """
-        Convert AxiomforgeaiAction to JSON payload for step message.
+    def _step_payload(self, action: AxiomforgeaiAction) -> Dict[str, Any]:
+        """Convert AxiomforgeaiAction to JSON payload for the step endpoint."""
+        return {"solution": action.solution}
 
-        Args:
-            action: AxiomforgeaiAction instance
-
-        Returns:
-            Dictionary representation suitable for JSON encoding
-        """
-        return {
-            "message": action.message,
-        }
-
-    def _parse_result(self, payload: Dict) -> StepResult[AxiomforgeaiObservation]:
-        """
-        Parse server response into StepResult[AxiomforgeaiObservation].
-
-        Args:
-            payload: JSON response data from server
-
-        Returns:
-            StepResult with AxiomforgeaiObservation
-        """
-        obs_data = payload.get("observation", {})
+    def _parse_result(self, payload: Dict[str, Any]) -> StepResult[AxiomforgeaiObservation]:
+        """Parse the server's step response into a StepResult."""
+        obs_data: Dict[str, Any] = payload.get("observation", {})
         observation = AxiomforgeaiObservation(
-            echoed_message=obs_data.get("echoed_message", ""),
-            message_length=obs_data.get("message_length", 0),
+            question=obs_data.get("question", ""),
+            topic=obs_data.get("topic", ""),
+            difficulty=float(obs_data.get("difficulty", 0.5)),
+            feedback=obs_data.get("feedback", ""),
             done=payload.get("done", False),
             reward=payload.get("reward"),
-            metadata=obs_data.get("metadata", {}),
+            metadata=obs_data.get("metadata"),
         )
-
         return StepResult(
             observation=observation,
             reward=payload.get("reward"),
             done=payload.get("done", False),
         )
 
-    def _parse_state(self, payload: Dict) -> State:
-        """
-        Parse server response into State object.
-
-        Args:
-            payload: JSON response from state request
-
-        Returns:
-            State object with episode_id and step_count
-        """
+    def _parse_state(self, payload: Dict[str, Any]) -> State:
+        """Parse the server's state response into a State object."""
         return State(
             episode_id=payload.get("episode_id"),
             step_count=payload.get("step_count", 0),
