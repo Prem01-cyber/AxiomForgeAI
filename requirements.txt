@@ -155,3 +155,5 @@ xgrammar==0.1.33
 xxhash==3.6.0
 yarl==1.23.0
 zipp==3.23.1
+matplotlib==3.10.9
+flash-attn==2.8.3
