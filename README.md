@@ -15,7 +15,7 @@ tags:
 
 [![OpenEnv](https://img.shields.io/badge/Powered%20by-OpenEnv-blue)](https://github.com/meta-pytorch/OpenEnv)
 
-*A self-improvement loop for math reasoning, where a compact model practices, gets grounded feedback, and learns from stronger solution paths.*
+*It doesn't just solve problems. It writes them, answers them, and gets every reasoning step graded — not the answer, the thinking. Then it does it again, harder, until the chain of logic holds.*
 
 ## The Problem
 
